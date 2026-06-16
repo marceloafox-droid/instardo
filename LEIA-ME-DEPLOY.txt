@@ -1,0 +1,18 @@
+COMO SUBIR NO NETLIFY
+
+1. No Netlify, abra o projeto instardobeta / instardo.com.
+2. Va em Deploys.
+3. Suba esta pasta inteira: InstaRDO_DEPLOY_NETLIFY
+   - Nao suba apenas o index.html.
+   - A pasta netlify/functions precisa ir junto.
+4. Confira em Project configuration > Environment variables se existe:
+   OPENAI_API_KEY
+5. Depois do deploy, teste:
+   https://instardobeta.netlify.app/.netlify/functions/melhorar-texto
+   ou
+   https://instardo.com/.netlify/functions/melhorar-texto
+
+Resultado esperado ao abrir direto no navegador:
+{"error":"Metodo nao permitido."}
+
+Se aparecer esse erro, a funcao subiu corretamente. Depois teste o botao Melhorar com IA dentro do app.
