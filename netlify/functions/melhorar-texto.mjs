@@ -2,26 +2,23 @@ const MODEL = process.env.OPENAI_MODEL || "gpt-5.4-mini";
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 
 const SYSTEM_PROMPT = `
-Você é um assistente técnico especializado em Relatório Diário de Obras de implantação civil.
+Voce e um assistente tecnico especializado em Relatorio Diario de Obras (RDO) de implantacao civil.
 
-Sua função é melhorar descrições de atividades de obra e textos técnicos de relatório.
+Sua funcao e transformar descricoes curtas de campo em um texto tecnico mais completo, profissional e utilizavel em relatorio.
 
-Regras obrigatórias:
-1. Seja direto, profissional, técnico e limpo.
-2. Não escreva texto longo demais.
-3. Não invente informação.
-4. Não invente datas, quantidades, locais, pessoas, modelos de equipamento ou marcas.
-5. Não use floreio, marketing, opinião ou linguagem prolixa.
-6. Não use markdown.
-7. Não explique o que fez.
-8. Entregue apenas o texto final melhorado.
-9. Use português do Brasil.
-10. Preserve o sentido original.
-11. Substitua termos genéricos por vocabulário técnico de canteiro de obras quando houver evidência no texto ou na imagem.
-12. Se houver imagem, analise visualmente a imagem e use apenas detalhes técnicos realmente observáveis.
-13. Se o equipamento parecer uma escavadeira, descreva como "escavadeira hidráulica" apenas se visualmente ou textualmente compatível.
-14. Só informe marca/modelo, como CAT, Komatsu, Volvo ou modelo específico, se estiver claramente visível na imagem ou explicitamente escrito no texto.
-15. Se o modelo não for identificável, escreva "modelo não identificado" ou omita o modelo.
+Regras obrigatorias:
+1. Entregue apenas o texto final melhorado, sem explicacoes e sem markdown.
+2. Escreva em portugues do Brasil, com tom tecnico de canteiro de obras.
+3. Produza normalmente um paragrafo com 2 a 4 frases, entre 45 e 90 palavras.
+4. Desenvolva um pouco a descricao, incluindo etapas operacionais genericas quando forem coerentes com a atividade: preparacao da area, execucao, conferencia, organizacao, limpeza, seguranca, continuidade dos servicos ou liberacao da frente.
+5. Nao invente dados especificos: datas, horarios, quantidades, medidas, locais, nomes, pessoas, empresas, marcas, modelos, numero de equipes ou equipamentos.
+6. Nao crie problemas, pendencias, ocorrencias ou conclusoes que nao estejam no texto original.
+7. Preserve o sentido original e acrescente somente complementos tecnicos plausiveis e genericos.
+8. Evite texto seco demais. O resultado deve parecer um registro completo de RDO, nao apenas uma correcao gramatical.
+9. Substitua termos simples por vocabulario tecnico quando houver base no texto ou na imagem.
+10. Se houver imagem, use apenas detalhes tecnicos realmente observaveis.
+11. So informe marca/modelo de equipamento se estiver claramente visivel na imagem ou escrito no texto.
+12. Se algum dado nao estiver claro, escreva de forma neutra, sem afirmar o que nao foi informado.
 `.trim();
 
 export async function handler(event) {
@@ -30,12 +27,12 @@ export async function handler(event) {
   }
 
   if (event.httpMethod !== "POST") {
-    return json(405, { error: "Método não permitido." });
+    return json(405, { error: "Metodo nao permitido." });
   }
 
   try {
     if (!process.env.OPENAI_API_KEY) {
-      return json(500, { error: "OPENAI_API_KEY não configurada no servidor." });
+      return json(500, { error: "OPENAI_API_KEY nao configurada no servidor." });
     }
 
     const body = JSON.parse(event.body || "{}");
@@ -53,7 +50,7 @@ export async function handler(event) {
     const obs = String(observacao || "").trim();
 
     if (!entrada && !imageDataUrl) {
-      return json(400, { error: "Envie texto ou imagem para análise." });
+      return json(400, { error: "Envie texto ou imagem para analise." });
     }
 
     if (entrada.length > 5000) {
@@ -62,16 +59,16 @@ export async function handler(event) {
 
     const userText = `
 Tipo: ${tipo}
-Contexto: ${contexto || "Relatório Diário de Obras"}
+Contexto: ${contexto || "Relatorio Diario de Obras"}
 
-Descrição original:
-${entrada || "(sem descrição textual)"}
+Descricao original:
+${entrada || "(sem descricao textual)"}
 
-Observação:
-${obs || "(sem observação)"}
+Observacao:
+${obs || "(sem observacao)"}
 
 Tarefa:
-Melhore tecnicamente a descrição da atividade. Se houver imagem anexada, use-a apenas para complementar com detalhes técnicos observáveis.
+Reescreva como um registro tecnico de RDO mais completo. Nao apenas corrija o portugues: desenvolva moderadamente a atividade, mantendo fidelidade ao que foi informado. Se houver imagem anexada, use-a apenas para complementar com detalhes tecnicos observaveis.
 `.trim();
 
     const userContent = [
@@ -92,16 +89,16 @@ Melhore tecnicamente a descrição da atividade. Se houver imagem anexada, use-a
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-      model: MODEL,
-      instructions: SYSTEM_PROMPT,
-      input: [
-        {
-          role: "user",
-          content: userContent
-        }
-      ],
-      temperature: 0.2,
-      max_output_tokens: 500
+        model: MODEL,
+        instructions: SYSTEM_PROMPT,
+        input: [
+          {
+            role: "user",
+            content: userContent
+          }
+        ],
+        temperature: 0.45,
+        max_output_tokens: 700
       })
     });
 
@@ -125,7 +122,6 @@ Melhore tecnicamente a descrição da atividade. Se houver imagem anexada, use-a
     }
 
     return json(200, { textoMelhorado });
-
   } catch (err) {
     console.error("[OPENAI_FUNCTION_ERROR]", err);
     return json(500, {
