@@ -5538,16 +5538,193 @@ function _buildShareText() {
 async function executarCompartilhar() {
     const txt = _buildShareText();
     if (!txt) return;
-    if (navigator.share) {
-        try {
-            await navigator.share({ title: 'InstaRDO — Registro de Obra', text: txt });
+
+    // Tenta gerar imagem do card para compartilhar
+    try {
+        const imgFile = await _gerarImagemCard();
+        if (imgFile && navigator.canShare && navigator.canShare({ files: [imgFile] })) {
+            await navigator.share({ files: [imgFile], title: 'InstaRDO', text: txt });
             return;
-        } catch(e) {
-            if (e.name === 'AbortError') return;
         }
+    } catch(e) {
+        if (e.name === 'AbortError') return;
+        console.warn('[SHARE] falha na imagem, tentando só texto:', e);
     }
-    // fallback: copia para clipboard
+
+    // Fallback: compartilha só texto
+    if (navigator.share) {
+        try { await navigator.share({ title: 'InstaRDO — Registro de Obra', text: txt }); return; }
+        catch(e) { if (e.name === 'AbortError') return; }
+    }
     await copiarTextoPost();
+}
+
+async function _gerarImagemCard() {
+    if (!_shareCurrentData) return null;
+    const { reg, perfil, obraNome, empresaNome, frenteNome, fotos } = _shareCurrentData;
+
+    const W = 1080, H = 1920;
+    const canvas = document.createElement('canvas');
+    canvas.width = W; canvas.height = H;
+    const ctx = canvas.getContext('2d');
+
+    // Fundo gradiente escuro
+    const grad = ctx.createLinearGradient(0, 0, W, H);
+    grad.addColorStop(0, '#1A1D27');
+    grad.addColorStop(1, '#0F1117');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, W, H);
+
+    let yOff = 0;
+
+    // Foto (se houver)
+    const primeiraUrl = fotos && fotos.length ? (fotos[0].url || getPhotoUrl(fotos[0])) : null;
+    const FOTO_H = 900;
+    if (primeiraUrl) {
+        try {
+            const resp = await fetch(primeiraUrl);
+            const blob = await resp.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            await new Promise((res, rej) => {
+                const img = new Image();
+                img.onload = () => {
+                    // Cover crop
+                    const r = Math.max(W / img.width, FOTO_H / img.height);
+                    const sw = W / r, sh = FOTO_H / r;
+                    const sx = (img.width - sw) / 2, sy = (img.height - sh) / 2;
+                    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, W, FOTO_H);
+                    URL.revokeObjectURL(blobUrl);
+                    res();
+                };
+                img.onerror = rej;
+                img.src = blobUrl;
+            });
+            // Gradiente sobre a foto (fade para baixo)
+            const fadeGrad = ctx.createLinearGradient(0, FOTO_H - 120, 0, FOTO_H);
+            fadeGrad.addColorStop(0, 'rgba(26,29,39,0)');
+            fadeGrad.addColorStop(1, '#1A1D27');
+            ctx.fillStyle = fadeGrad;
+            ctx.fillRect(0, FOTO_H - 120, W, 120);
+            yOff = FOTO_H - 30;
+        } catch(e) {
+            console.warn('[SHARE] falha ao carregar foto:', e);
+            yOff = 60;
+        }
+    } else {
+        yOff = 80;
+    }
+
+    // Linha separadora amarela
+    ctx.fillStyle = '#F5C518';
+    ctx.fillRect(60, yOff, 80, 5);
+    yOff += 32;
+
+    // Nome do autor
+    ctx.fillStyle = '#F1F5F9';
+    ctx.font = 'bold 52px -apple-system, Arial, sans-serif';
+    ctx.fillText(perfil.nome || perfil.login || '', 60, yOff);
+    yOff += 44;
+
+    // Data
+    const dataStr = reg.dataRegistro || reg.data || '';
+    const hora = reg.hora ? ' às ' + reg.hora : '';
+    if (dataStr) {
+        ctx.fillStyle = '#94A3B8';
+        ctx.font = '36px -apple-system, Arial, sans-serif';
+        ctx.fillText(fmtDate(dataStr) + hora, 60, yOff);
+        yOff += 52;
+    }
+
+    // Chips: obra, empresa, frente
+    function _chip(label, val, x, y, maxW) {
+        ctx.fillStyle = 'rgba(255,255,255,0.08)';
+        _roundRect(ctx, x, y, maxW, 90, 18);
+        ctx.fill();
+        ctx.fillStyle = '#64748B';
+        ctx.font = '26px -apple-system, Arial, sans-serif';
+        ctx.fillText(label.toUpperCase(), x + 20, y + 34);
+        ctx.fillStyle = '#F1F5F9';
+        ctx.font = 'bold 32px -apple-system, Arial, sans-serif';
+        const txt = _truncate(ctx, val, maxW - 40);
+        ctx.fillText(txt, x + 20, y + 68);
+    }
+    function _roundRect(c, x, y, w, h, r) {
+        c.beginPath();
+        c.moveTo(x + r, y);
+        c.lineTo(x + w - r, y); c.quadraticCurveTo(x + w, y, x + w, y + r);
+        c.lineTo(x + w, y + h - r); c.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+        c.lineTo(x + r, y + h); c.quadraticCurveTo(x, y + h, x, y + h - r);
+        c.lineTo(x, y + r); c.quadraticCurveTo(x, y, x + r, y);
+        c.closePath();
+    }
+    function _truncate(c, txt, maxW) {
+        if (c.measureText(txt).width <= maxW) return txt;
+        while (txt.length > 0 && c.measureText(txt + '…').width > maxW) txt = txt.slice(0, -1);
+        return txt + '…';
+    }
+
+    const CHIP_W = (W - 140) / 2;
+    _chip('Obra', obraNome, 60, yOff, CHIP_W);
+    _chip('Empresa', empresaNome, 60 + CHIP_W + 20, yOff, CHIP_W);
+    yOff += 110;
+    _chip('Frente', frenteNome, 60, yOff, W - 120);
+    yOff += 110;
+
+    // Descrição
+    const desc = reg.descricao || reg.descFinal || reg.desc || '';
+    if (desc) {
+        // Barra lateral amarela
+        ctx.fillStyle = '#F5C518';
+        ctx.fillRect(60, yOff, 6, 0); // dinâmico abaixo
+        ctx.fillStyle = 'rgba(255,255,255,0.04)';
+        const descLines = _wrapText(ctx, desc, W - 160, '34px', 220);
+        const descH = descLines.length * 44 + 40;
+        _roundRect(ctx, 60, yOff, W - 120, descH, 18);
+        ctx.fill();
+        ctx.fillStyle = '#F5C518';
+        ctx.fillRect(60, yOff, 6, descH);
+        ctx.fillStyle = '#CBD5E1';
+        ctx.font = '34px -apple-system, Arial, sans-serif';
+        descLines.forEach((line, i) => ctx.fillText(line, 88, yOff + 36 + i * 44));
+        yOff += descH + 30;
+    }
+
+    function _wrapText(c, txt, maxW, fontStr, maxChars) {
+        c.font = fontStr + ' -apple-system, Arial, sans-serif';
+        const words = txt.substring(0, maxChars).split(' ');
+        const lines = [];
+        let cur = '';
+        for (const w of words) {
+            const test = cur ? cur + ' ' + w : w;
+            if (c.measureText(test).width > maxW && cur) { lines.push(cur); cur = w; }
+            else cur = test;
+        }
+        if (cur) lines.push(cur);
+        return lines.slice(0, 5);
+    }
+
+    // Logo InstaRDO no rodapé
+    const FOOT_Y = H - 80;
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.fillRect(0, FOOT_Y - 24, W, 1);
+    ctx.fillStyle = '#F5C518';
+    ctx.font = 'bold 42px -apple-system, Arial, sans-serif';
+    ctx.fillText('INSTA', 60, FOOT_Y + 28);
+    ctx.fillStyle = '#F1F5F9';
+    ctx.font = 'bold 42px -apple-system, Arial, sans-serif';
+    ctx.fillText('RDO', 60 + ctx.measureText('INSTA').width + 8, FOOT_Y + 28);
+    ctx.fillStyle = '#64748B';
+    ctx.font = '30px -apple-system, Arial, sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('Registro Diário de Obra', W - 60, FOOT_Y + 28);
+    ctx.textAlign = 'left';
+
+    return new Promise((res, rej) => {
+        canvas.toBlob(blob => {
+            if (!blob) { rej(new Error('canvas vazio')); return; }
+            res(new File([blob], 'instardo.jpg', { type: 'image/jpeg' }));
+        }, 'image/jpeg', 0.92);
+    });
 }
 
 async function copiarTextoPost() {
