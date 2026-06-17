@@ -1092,6 +1092,12 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
 .chat-msg-author{flex-shrink:0;margin-right:6px;font-weight:700;cursor:pointer}
 .chat-msg-author:hover{text-decoration:underline}
 .chat-msg-text{color:#cbd5e1;flex:1}
+.chat-msg-line.reply-target{cursor:pointer}
+.chat-msg-line.reply-target:active{background:rgba(245,197,24,.08)}
+.chat-reply-preview{display:none;align-items:flex-start;gap:8px;background:#15151f;border-top:1px solid #222;border-left:3px solid var(--yellow);padding:8px 10px;color:#cbd5e1;font-size:12px}
+.chat-reply-preview.active{display:flex}
+.chat-reply-preview strong{color:var(--yellow)}
+.chat-reply-preview button{margin-left:auto;color:#94a3b8;background:transparent;border:0;font-size:16px;line-height:1;cursor:pointer}
 .chat-msg-text.palavrao{color:#64748b;font-style:italic}
 .chat-msg-img{max-width:220px;max-height:180px;border-radius:6px;margin-top:4px;cursor:pointer;border:1px solid #333;display:block}
 .chat-msg-sistema{color:#4a5568;font-style:italic;font-size:12px;padding:2px 8px}
@@ -2375,8 +2381,56 @@ function roleFromPermissoes(permissoes, login) {
     if (perms.includes('gerenciar') || perms.includes('cadastro')) return 'gerente';
     return 'usuario';
 }
-function fromSbUser(u) { const permissoes = normalizePermissoes(u, u.login); return { id: S(u.id || u.login), login: normalizeLogin(u.login), senha: S(u.senha || u.password || ''), nome: u.nome || u.name || u.login || '', perfil: u.perfil || u.role || roleFromPermissoes(permissoes, u.login), role: u.role || u.perfil || roleFromPermissoes(permissoes, u.login), permissao: u.permissao || u.perfil || u.role || roleFromPermissoes(permissoes, u.login), permissoes, ativo: u.ativo !== false }; }
-function toSbUser(u) { const login = normalizeLogin(u.login); const permissoes = normalizePermissoes(u, login); return { login, senha: S(u.senha || ''), nome: u.nome || login, perfil: u.perfil || roleFromPermissoes(permissoes, login), permissao: u.permissao || u.perfil || roleFromPermissoes(permissoes, login), permissoes, ativo: u.ativo !== false }; }
+function makeAccountId() {
+    try {
+        const raw = (crypto && crypto.randomUUID) ? crypto.randomUUID() : uid();
+        return 'acct_' + String(raw).replace(/[^a-zA-Z0-9]/g, '').slice(0, 24);
+    } catch (_) {
+        return 'acct_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    }
+}
+function getUserAccountId(u) {
+    return S(u && (u.account_id || u.accountId || u.serial || u.user_serial || u.id || '')).trim();
+}
+function ensureUserAccountId(u) {
+    const accountId = getUserAccountId(u) || makeAccountId();
+    return Object.assign({}, u || {}, { account_id: accountId, accountId });
+}
+function fromSbUser(u) {
+    const permissoes = normalizePermissoes(u, u.login);
+    const normalized = ensureUserAccountId(u);
+    return {
+        id: S(u.id || normalized.account_id || u.login),
+        account_id: normalized.account_id,
+        accountId: normalized.account_id,
+        login: normalizeLogin(u.login),
+        senha: S(u.senha || u.password || ''),
+        nome: u.nome || u.name || u.login || '',
+        perfil: u.perfil || u.role || roleFromPermissoes(permissoes, u.login),
+        role: u.role || u.perfil || roleFromPermissoes(permissoes, u.login),
+        permissao: u.permissao || u.perfil || u.role || roleFromPermissoes(permissoes, u.login),
+        permissoes,
+        ativo: u.ativo !== false
+    };
+}
+function toSbUser(u) {
+    const login = normalizeLogin(u.login);
+    const permissoes = normalizePermissoes(u, login);
+    const normalized = ensureUserAccountId(u);
+    const payload = {
+        account_id: normalized.account_id,
+        login,
+        nome: u.nome || login,
+        perfil: u.perfil || roleFromPermissoes(permissoes, login),
+        permissao: u.permissao || u.perfil || roleFromPermissoes(permissoes, login),
+        permissoes,
+        ativo: u.ativo !== false
+    };
+    if (Object.prototype.hasOwnProperty.call(u, 'senha') && S(u.senha || '').trim()) {
+        payload.senha = S(u.senha || '');
+    }
+    return payload;
+}
 async function sbSelect(store) {
     const table = toSbStoreName(store);
     if (store === 'relatorios') {
@@ -2431,9 +2485,10 @@ async function sbUpsert(store, obj) {
             body: JSON.stringify(payload)
         });
     } catch (e) {
-        if ((store === 'usuarios' || store === 'rdo_usuarios') && payload && Object.prototype.hasOwnProperty.call(payload, 'permissoes') && /permissoes|column|schema cache/i.test(String(e && e.message || e))) {
+        if ((store === 'usuarios' || store === 'rdo_usuarios') && payload && /permissoes|account_id|column|schema cache/i.test(String(e && e.message || e))) {
             const fallback = Object.assign({}, payload);
-            delete fallback.permissoes;
+            if (/permissoes/i.test(String(e && e.message || e))) delete fallback.permissoes;
+            if (/account_id|column|schema cache/i.test(String(e && e.message || e))) delete fallback.account_id;
             rows = await sbRequest(`/rest/v1/${table}?on_conflict=${encodeURIComponent(conflict)}`, {
                 method: 'POST',
                 headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
@@ -6474,7 +6529,7 @@ async function addUserFromSettings() {
     // ==================================================
     const role = roleFromPermissoes(permissoes, login);
 
-    const novoUser = { login, senha: pass, nome, perfil: role, role: role, permissao: role, permissoes, ativo: true };
+    const novoUser = ensureUserAccountId({ login, senha: pass, nome, perfil: role, role: role, permissao: role, permissoes, ativo: true });
 
     let allKnownUsers = [];
     try {
@@ -6500,6 +6555,8 @@ async function addUserFromSettings() {
     if (existingIndex >= 0) {
         users[existingIndex] = {
             ...users[existingIndex],
+            account_id: users[existingIndex].account_id || users[existingIndex].accountId || novoUser.account_id,
+            accountId: users[existingIndex].accountId || users[existingIndex].account_id || novoUser.account_id,
             senha: pass,
             nome,
             perfil: role,
@@ -6533,7 +6590,7 @@ async function addUserFromSettings() {
     try {
         // ========== PATCH CONTENÇÃO SYNC: Salvar em rdo_usuarios e rdo_perfis simultaneamente ==========
         // Inclui a senha real do usuário (não hardcoded)
-        const userData = { login, senha: pass, nome, perfil: role, role: role, permissao: role, permissoes, ativo: true, updated_at: new Date().toISOString() };
+        const userData = { ...novoUser, updated_at: new Date().toISOString() };
 
         // Salvar em rdo_usuarios com a senha correta
         await sbUpsert('rdo_usuarios', userData).catch(err => {
@@ -6656,77 +6713,38 @@ function loginFromNome(nome) {
 async function renameUserLogin(loginAntigo, loginNovo) {
     if (!loginAntigo || !loginNovo || loginAntigo === loginNovo) return;
     const enc = encodeURIComponent;
+    const now = new Date().toISOString();
 
-    // 1. Buscar perfil completo antes de qualquer deleção
-    let perfilAntigo = null;
-    try {
-        const rows = await sbRequest(`/rest/v1/rdo_perfis?login=eq.${enc(loginAntigo)}&limit=1`);
-        perfilAntigo = (Array.isArray(rows) ? rows[0] : rows) || null;
-    } catch (_) {}
+    // 1. Atualizar as linhas existentes. Isso preserva o id/account_id do Supabase.
+    await Promise.allSettled([
+        sbRequest(`/rest/v1/rdo_usuarios?login=eq.${enc(loginAntigo)}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ login: loginNovo, updated_at: now })
+        }),
+        sbRequest(`/rest/v1/rdo_perfis?login=eq.${enc(loginAntigo)}`, {
+            method: 'PATCH',
+            body: JSON.stringify({ login: loginNovo, usuario_handle: loginNovo, updated_at: now })
+        })
+    ]);
 
-    // 2. Buscar dados do rdo_usuarios antigo
-    let usuarioAntigo = null;
-    try {
-        const rows = await sbRequest(`/rest/v1/rdo_usuarios?login=eq.${enc(loginAntigo)}&limit=1`);
-        usuarioAntigo = (Array.isArray(rows) ? rows[0] : rows) || null;
-    } catch (_) {}
-
-    // 3. Criar novo rdo_perfis preservando TODOS os dados ricos
-    const novoPerfilBase = {
-        ...(perfilAntigo || {}),
-        login: loginNovo,
-        usuario_handle: loginNovo,
-        updated_at: new Date().toISOString()
-    };
-    delete novoPerfilBase.id;
-    delete novoPerfilBase.created_at;
-
-    await sbRequest(`/rest/v1/rdo_perfis?on_conflict=login`, {
-        method: 'POST',
-        headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
-        body: JSON.stringify(novoPerfilBase)
-    }).catch(async () => {
-        // fallback: enviar apenas campos essenciais + dados ricos críticos
-        const fallback = { login: loginNovo, nome: novoPerfilBase.nome || loginNovo, ativo: true, updated_at: novoPerfilBase.updated_at };
-        if (novoPerfilBase.avatar_url) fallback.avatar_url = novoPerfilBase.avatar_url;
-        if (novoPerfilBase.bio)        fallback.bio        = novoPerfilBase.bio;
-        if (novoPerfilBase.capa_url)   fallback.capa_url   = novoPerfilBase.capa_url;
-        await sbRequest(`/rest/v1/rdo_perfis?on_conflict=login`, {
-            method: 'POST',
-            headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
-            body: JSON.stringify(fallback)
-        }).catch(() => {});
-    });
-
-    // 4. Criar novo rdo_usuarios com novo login
-    if (usuarioAntigo) {
-        const novoUsuario = { ...usuarioAntigo, login: loginNovo };
-        delete novoUsuario.id; delete novoUsuario.created_at;
-        await sbRequest(`/rest/v1/rdo_usuarios?on_conflict=login`, {
-            method: 'POST',
-            headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
-            body: JSON.stringify(novoUsuario)
-        }).catch(() => {});
-    }
-
-    // 5. Atualizar TODAS as referências sociais
+    // 2. Atualizar referências sociais, registros e chat.
     await Promise.allSettled([
         sbRequest(`/rest/v1/rdo_seguidores?seguidor_login=eq.${enc(loginAntigo)}`, { method: 'PATCH', body: JSON.stringify({ seguidor_login: loginNovo }) }),
         sbRequest(`/rest/v1/rdo_seguidores?seguido_login=eq.${enc(loginAntigo)}`,  { method: 'PATCH', body: JSON.stringify({ seguido_login:  loginNovo }) }),
         sbRequest(`/rest/v1/rdo_curtidas?usuario_login=eq.${enc(loginAntigo)}`,    { method: 'PATCH', body: JSON.stringify({ usuario_login:   loginNovo }) }),
         sbRequest(`/rest/v1/rdo_comentarios?usuario_login=eq.${enc(loginAntigo)}`, { method: 'PATCH', body: JSON.stringify({ usuario_login:   loginNovo }) }),
         sbRequest(`/rest/v1/rdo_registros?usuario_login=eq.${enc(loginAntigo)}`,   { method: 'PATCH', body: JSON.stringify({ usuario_login:   loginNovo }) }),
+        sbRequest(`/rest/v1/relatorios?usuario_login=eq.${enc(loginAntigo)}`,      { method: 'PATCH', body: JSON.stringify({ usuario_login:   loginNovo }) }),
         sbRequest(`/rest/v1/rdo_notificacoes?origem_login=eq.${enc(loginAntigo)}`, { method: 'PATCH', body: JSON.stringify({ origem_login:   loginNovo }) }),
         sbRequest(`/rest/v1/rdo_notificacoes?destino_login=eq.${enc(loginAntigo)}`,{ method: 'PATCH', body: JSON.stringify({ destino_login:  loginNovo }) }),
+        sbRequest(`/rest/v1/rdo_chat_salas?criador_login=eq.${enc(loginAntigo)}`,  { method: 'PATCH', body: JSON.stringify({ criador_login:  loginNovo }) }),
+        sbRequest(`/rest/v1/rdo_chat_salas?dono_login=eq.${enc(loginAntigo)}`,     { method: 'PATCH', body: JSON.stringify({ dono_login:     loginNovo }) }),
+        sbRequest(`/rest/v1/rdo_chat_participantes?login=eq.${enc(loginAntigo)}`,  { method: 'PATCH', body: JSON.stringify({ login:          loginNovo }) }),
+        sbRequest(`/rest/v1/rdo_chat_leituras?login=eq.${enc(loginAntigo)}`,       { method: 'PATCH', body: JSON.stringify({ login:          loginNovo }) }),
+        sbRequest(`/rest/v1/rdo_chat_mensagens?autor_login=eq.${enc(loginAntigo)}`,{ method: 'PATCH', body: JSON.stringify({ autor_login:    loginNovo }) })
     ]);
 
-    // 6. Deletar registros antigos APÓS migração
-    await Promise.allSettled([
-        sbRequest(`/rest/v1/rdo_perfis?login=eq.${enc(loginAntigo)}`,   { method: 'DELETE' }),
-        sbRequest(`/rest/v1/rdo_usuarios?login=eq.${enc(loginAntigo)}`,  { method: 'DELETE' }),
-    ]);
-
-    // 7. Atualizar socialState em memória
+    // 3. Atualizar socialState em memória
     if (typeof socialState !== 'undefined') {
         if (socialState.perfis && socialState.perfis[loginAntigo]) {
             socialState.perfis[loginNovo] = { ...socialState.perfis[loginAntigo], login: loginNovo, usuario_handle: loginNovo };
@@ -6742,20 +6760,39 @@ async function renameUserLogin(loginAntigo, loginNovo) {
         }
     }
 
-    // 8. Atualizar lista local de usuários (localStorage)
+    // 4. Atualizar lista local de usuários (localStorage)
     try {
         let users = getUsers ? getUsers() : [];
-        users = users.map(u => normalizeLogin(u.login) === loginAntigo ? { ...u, login: loginNovo } : u);
+        users = users.map(u => normalizeLogin(u.login) === loginAntigo ? { ...u, login: loginNovo, updatedAt: now } : u);
         if (typeof saveUsers === 'function') saveUsers(users);
     } catch (_) {}
 
-    // 9. Atualizar sessão se for o próprio usuário logado
+    // 5. Atualizar estado local do chat.
+    try {
+        if (typeof CHAT_STATE !== 'undefined') {
+            Object.keys(CHAT_STATE.participantes || {}).forEach(salaId => {
+                CHAT_STATE.participantes[salaId] = (CHAT_STATE.participantes[salaId] || []).map(p => normalizeLogin(p.login) === loginAntigo ? { ...p, login: loginNovo } : p);
+            });
+            Object.keys(CHAT_STATE.mensagens || {}).forEach(salaId => {
+                CHAT_STATE.mensagens[salaId] = (CHAT_STATE.mensagens[salaId] || []).map(m => normalizeLogin(m.autor_login) === loginAntigo ? { ...m, autor_login: loginNovo } : m);
+            });
+            CHAT_STATE.leituras = (CHAT_STATE.leituras || []).map(l => normalizeLogin(l.login) === loginAntigo ? { ...l, login: loginNovo } : l);
+            CHAT_STATE.salas = (CHAT_STATE.salas || []).map(s => ({
+                ...s,
+                criador_login: normalizeLogin(s.criador_login) === loginAntigo ? loginNovo : s.criador_login,
+                dono_login: normalizeLogin(s.dono_login) === loginAntigo ? loginNovo : s.dono_login
+            }));
+        }
+    } catch (_) {}
+
+    // 6. Atualizar sessão se for o próprio usuário logado
     const sessionLogin = normalizeLogin(getCurrentUserLogin ? getCurrentUserLogin() : '');
     if (sessionLogin === loginAntigo) {
         try {
             const sessionObj = JSON.parse(sessionStorage.getItem('rdo_current_user') || '{}');
             if (sessionObj.login) { sessionObj.login = loginNovo; sessionStorage.setItem('rdo_current_user', JSON.stringify(sessionObj)); }
             sessionStorage.setItem('rdo_user', loginNovo);
+            localStorage.setItem('rdo_user', loginNovo);
             localStorage.setItem('instaRDO_user', loginNovo);
             if (window.RDO_MEMORY_SESSION && RDO_MEMORY_SESSION.user) RDO_MEMORY_SESSION.user.login = loginNovo;
         } catch (_) {}
@@ -6845,6 +6882,8 @@ async function saveUserEdit() {
     const loginMudou = login !== loginOriginal;
 
     let users = getUsers();
+    const originalLocalUser = users.find(u => normalizeLogin(u.login) === loginOriginal) || {};
+    const originalAccountId = getUserAccountId(originalLocalUser) || makeAccountId();
     // Se login mudou, remover registro antigo e inserir novo
     if (loginMudou) {
         users = users.filter(u => normalizeLogin(u.login) !== loginOriginal);
@@ -6852,6 +6891,8 @@ async function saveUserEdit() {
     const idx = users.findIndex(u => normalizeLogin(u.login) === login);
     if (idx >= 0) {
         users[idx].login = login;
+        users[idx].account_id = users[idx].account_id || users[idx].accountId || originalAccountId;
+        users[idx].accountId = users[idx].accountId || users[idx].account_id || originalAccountId;
         users[idx].nome = nome;
         users[idx].perfil = role;
         users[idx].role = role;
@@ -6860,7 +6901,7 @@ async function saveUserEdit() {
         users[idx].ativo = ativo;
         users[idx].updatedAt = new Date().toISOString();
     } else {
-        users.push({ login, nome, perfil: role, role: role, permissao: role, permissoes, ativo, updatedAt: new Date().toISOString() });
+        users.push({ account_id: originalAccountId, accountId: originalAccountId, login, nome, perfil: role, role: role, permissao: role, permissoes, ativo, updatedAt: new Date().toISOString() });
     }
 
     saveUsers(users);
@@ -6887,7 +6928,7 @@ async function saveUserEdit() {
 
     const senhaNova = (document.getElementById('edit-user-senha')?.value || '').trim();
     try {
-        const userData = { login, nome, perfil: role, role: role, permissao: role, permissoes, ativo };
+        const userData = { account_id: originalAccountId, accountId: originalAccountId, login, nome, perfil: role, role: role, permissao: role, permissoes, ativo };
         if (senhaNova) userData.senha = senhaNova;
         if (loginMudou) {
             toast('Renomeando e migrando dados...', 'info', 6000);
@@ -12209,6 +12250,7 @@ else {
 
     container.innerHTML = users.map(function(u){
       var login = safeNormalizeLogin(u.login);
+      var serial = (typeof getUserAccountId === 'function' ? getUserAccountId(u) : '') || safeS(u.id || '');
       var role = typeof normalizeRole === 'function' ? normalizeRole(u.perfil || u.permissao || u.role || 'usuario', login) : (u.perfil || 'usuario');
       var roleLabel = typeof labelRole === 'function' ? labelRole(role, login) : role;
       var isMaster = login === MESTRE_LOGIN;
@@ -12221,6 +12263,7 @@ else {
         '<div>' +
           '<div style="font-weight:600;font-size:14px">' + safeEsc(u.nome || login) + '</div>' +
           '<div style="font-size:11px;color:var(--txm)">@' + safeEsc(login) + ' · ' + safeEsc(roleLabel) + '</div>' +
+          (serial ? '<div style="font-size:10px;color:var(--txm);opacity:.72">Serial interno: ' + safeEsc(serial) + '</div>' : '') +
         '</div>' +
         '<div class="ger-user-actions">' + buttons + '</div>' +
       '</div>';
@@ -12478,6 +12521,7 @@ const CHAT_STATE = {
     realtimeWs: null,
     pollingTimer: null,
     selectedUsers: new Set(),
+    replyTo: null,
     minhaCorCache: {}    // { salaId: cor }
 };
 
@@ -12815,6 +12859,7 @@ async function openChatRoom(salaId) {
 }
 function closeChatRoom() {
     unsubscribeChatRoom();
+    clearChatReply();
     CHAT_STATE.salaAtual = null;
     const screen = document.getElementById('chat-room-screen');
     if (screen) {
@@ -12871,17 +12916,52 @@ function renderChatMessages() {
         const textoClass = m.contem_palavrao ? ' palavrao' : '';
         let conteudo = '';
         if (m.tipo === 'imagem' && m.imagem_url) {
-            conteudo = `<img class="chat-msg-img" src="${escAttr(m.imagem_url)}" alt="imagem" onclick="chatOpenImg('${escAttr(m.imagem_url)}')">`;
+            conteudo = `<img class="chat-msg-img" src="${escAttr(m.imagem_url)}" alt="imagem" onclick="event.stopPropagation();chatOpenImg('${escAttr(m.imagem_url)}')">`;
         } else {
             conteudo = `<span class="chat-msg-text${textoClass}">${esc(m.texto || '')}</span>`;
         }
-        html += `<div class="chat-msg-line">
+        html += `<div class="chat-msg-line reply-target" onclick="chatReplyToMessage('${escAttr(m.id || '')}')">
           <span class="chat-msg-time">[${hora}]</span>
-          <span class="chat-msg-author" style="color:${escAttr(cor)}" title="${escAttr(m.autor_login)}">&lt;@${esc(m.autor_login)}&gt;</span>
+          <span class="chat-msg-author" style="color:${escAttr(cor)}" title="${escAttr(m.autor_login)}" onclick="event.stopPropagation();chatReplyToMessage('${escAttr(m.id || '')}')">&lt;@${esc(m.autor_login)}&gt;</span>
           ${conteudo}
         </div>`;
     });
     area.innerHTML = html;
+}
+function chatReplyTextPreview(msg) {
+    if (!msg) return '';
+    const raw = msg.tipo === 'imagem' ? 'Imagem enviada' : S(msg.texto || msg.texto_original || '');
+    return raw.replace(/\s+/g, ' ').trim().slice(0, 120);
+}
+function chatReplyToMessage(msgId) {
+    const salaId = CHAT_STATE.salaAtual;
+    if (!salaId || !msgId) return;
+    const msg = (CHAT_STATE.mensagens[salaId] || []).find(m => String(m.id || '') === String(msgId));
+    if (!msg || msg.tipo === 'sistema') return;
+    CHAT_STATE.replyTo = {
+        id: msg.id || '',
+        autor: normalizeLogin(msg.autor_login || ''),
+        texto: chatReplyTextPreview(msg)
+    };
+    updateChatReplyPreview();
+    const input = document.getElementById('chat-composer-input');
+    if (input) input.focus();
+}
+function clearChatReply() {
+    CHAT_STATE.replyTo = null;
+    updateChatReplyPreview();
+}
+function updateChatReplyPreview() {
+    const box = document.getElementById('chat-reply-preview');
+    if (!box) return;
+    const r = CHAT_STATE.replyTo;
+    if (!r) {
+        box.classList.remove('active');
+        box.innerHTML = '';
+        return;
+    }
+    box.classList.add('active');
+    box.innerHTML = `<div><strong>Respondendo @${esc(r.autor)}</strong><br><span>${esc(r.texto || '')}</span></div><button type="button" onclick="clearChatReply()" title="Cancelar resposta">×</button>`;
 }
 function scrollChatToBottom(force) {
     const area = document.getElementById('chat-messages-area');
@@ -12908,12 +12988,18 @@ async function sendChatMessage() {
     let textoFinal = texto.trim();
     let textoOriginal = null;
     let contemPalavrao = false;
+    const reply = CHAT_STATE.replyTo;
+    if (reply && reply.autor) {
+        const quoted = reply.texto ? `: "${reply.texto}"` : '';
+        textoFinal = `↪ @${reply.autor}${quoted}\n${textoFinal}`;
+    }
     if (mensagemContemPalavrao(textoFinal, CHAT_STATE.palavroes)) {
         contemPalavrao = true;
         textoOriginal = textoFinal;
         textoFinal = 'enviou uma mensagem com palavras impróprias.';
     }
     if (input) { input.value = ''; input.style.height = 'auto'; }
+    clearChatReply();
     const payload = { sala_id: salaId, autor_login: myLogin, tipo: 'texto', texto: textoFinal, texto_original: textoOriginal, contem_palavrao: contemPalavrao, ativo: true };
     try {
         const saved = await chatPost('rdo_chat_mensagens', payload);
@@ -13282,6 +13368,7 @@ document.addEventListener('DOMContentLoaded', () => { loadChatPalavroes().catch(
   <div class="chat-messages-area" id="chat-messages-area">
     <div class="chat-loading-msgs">Carregando mensagens...</div>
   </div>
+  <div class="chat-reply-preview" id="chat-reply-preview"></div>
   <!-- Composer -->
   <div class="chat-composer">
     <button class="chat-composer-btn" onclick="document.getElementById('chat-img-input').click()" title="Enviar imagem">
