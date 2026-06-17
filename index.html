@@ -1686,6 +1686,7 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
 
     <div class="ger-tabs">
       <button class="ger-tab active" data-ger-tab="usuarios" onclick="setGerenciamentoTab('usuarios')">👥 Usuários</button>
+      <button class="ger-tab" data-ger-tab="excluidos" onclick="setGerenciamentoTab('excluidos');loadExcluidos()">🗂️ Excluídos</button>
       <button class="ger-tab" data-ger-tab="duplicacoes" onclick="setGerenciamentoTab('duplicacoes')">🧹 Duplicações</button>
       <button class="ger-tab" data-ger-tab="cadastros" onclick="setGerenciamentoTab('cadastros')">🧱 Cadastros</button>
       <button class="ger-tab" data-ger-tab="sync" onclick="setGerenciamentoTab('sync')">🔄 Sync</button>
@@ -1693,18 +1694,29 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
     </div>
 
     <div id="ger-pane-usuarios" class="ger-pane active">
-      <div class="card">
-        <div class="sec-tl">Adicionar usuário</div>
+      <!-- Botão + Cadastro -->
+      <button class="btn btp btn-wf mb3" onclick="toggleNovoUsuarioForm()" id="btn-toggle-novo-usuario" style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:15px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Cadastro
+      </button>
+
+      <!-- Formulário colapsável de novo usuário -->
+      <div id="novo-usuario-form" class="card" style="display:none;border:1px solid var(--bl);margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div class="sec-tl" style="margin:0">Novo Usuário</div>
+          <button class="btn bts bxs" onclick="toggleNovoUsuarioForm()">✕</button>
+        </div>
         <div class="fg"><label class="fl">Login</label><input id="new-user-login" class="fi" type="text" placeholder="ex: joao"></div>
         <div class="fg"><label class="fl">Senha</label><input id="new-user-pass" class="fi" type="password" placeholder="ex: 001"></div>
         <div class="fg"><label class="fl">Nome</label><input id="new-user-name" class="fi" type="text" placeholder="Nome do usuário"></div>
         <div class="fg">
-          <label class="fl">Permissoes de Acesso</label>
+          <label class="fl">Permissões de Acesso</label>
           <div id="new-user-permissoes" style="display:flex;flex-direction:column;gap:10px;background:var(--s2);padding:12px;border-radius:var(--rs);border:1px solid var(--bd)">
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="new-perm-cadastro" style="width:18px;height:18px"> <span>Cadastros (Obras, Empresas, Frentes)</span></label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="new-perm-gerenciar" style="width:18px;height:18px"> <span>Gerenciar (Sistema e Relatorios)</span></label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="new-perm-gerenciar" style="width:18px;height:18px"> <span>Gerenciar (Sistema e Relatórios)</span></label>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="new-perm-nova" style="width:18px;height:18px" checked> <span>Nova (Pode criar postagens)</span></label>
-            <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="new-perm-historico" style="width:18px;height:18px" checked> <span>Historico (Acesso aos registros)</span></label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="new-perm-historico" style="width:18px;height:18px" checked> <span>Histórico (Acesso aos registros)</span></label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;border-top:1px solid var(--bd);padding-top:10px"><input type="checkbox" id="new-perm-ia" style="width:18px;height:18px"> <span>Melhorar com IA <span style="font-size:11px;color:var(--txm)">(botão de IA em registros)</span></span></label>
           </div>
         </div>
         <div class="fg">
@@ -1712,13 +1724,24 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="new-seguir-mestre" style="width:18px;height:18px" checked> <span>Seguir <strong id="label-mestre-login">@marcelo</strong> automaticamente ao criar</span></label>
           </div>
         </div>
-        <button class="btn btp btn-wf" onclick="addUserFromSettings()">+ Adicionar usuário</button>
+        <button class="btn btp btn-wf" onclick="addUserFromSettings()">Adicionar usuário</button>
       </div>
 
+      <!-- Lista de usuários -->
       <div class="card">
-        <div class="sec-tl">Usuários cadastrados</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div class="sec-tl" style="margin:0">Usuários cadastrados</div>
+        </div>
         <input id="ger-user-search" class="fi mb3" type="text" placeholder="🔍 Buscar usuário..." oninput="renderUsersAdmin()">
         <div id="users-list" class="ger-list"></div>
+      </div>
+    </div>
+
+    <div id="ger-pane-excluidos" class="ger-pane">
+      <div class="card">
+        <div class="sec-tl">Usuários removidos da plataforma</div>
+        <p class="txm tsm mb3">Banco de dados de usuários excluídos. Dados preservados para histórico.</p>
+        <div id="excluidos-list"><p class="txm tsm">Carregando...</p></div>
       </div>
     </div>
 
@@ -1837,6 +1860,64 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
   </div>
 </div>
 
+<!-- MODAL: COMPARTILHAR -->
+<div id="modal-compartilhar" class="moverlay comments-sheet-modal hidden" onclick="if(event.target===this)closeModal('modal-compartilhar')">
+  <div class="comments-sheet" style="padding:0;overflow:hidden">
+    <div class="comments-pill"></div>
+    <div style="padding:16px 16px 0;display:flex;justify-content:space-between;align-items:center">
+      <div style="font-weight:700;font-size:16px">Compartilhar</div>
+      <button class="mcls" onclick="closeModal('modal-compartilhar')" style="position:static">✕</button>
+    </div>
+    <div style="padding:12px 16px 0">
+      <div id="share-card" style="background:linear-gradient(135deg,#1A1D27 0%,#252936 100%);border-radius:16px;overflow:hidden;border:1px solid rgba(255,255,255,.08)">
+        <div id="share-card-foto" style="width:100%;aspect-ratio:16/9;background:#000;overflow:hidden;display:none">
+          <img id="share-card-img" style="width:100%;height:100%;object-fit:cover" src="" alt="">
+        </div>
+        <div style="padding:14px 16px 16px">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+            <div id="share-card-avatar" style="width:36px;height:36px;border-radius:50%;background:var(--yellow);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;color:#111;flex-shrink:0"></div>
+            <div>
+              <div id="share-card-nome" style="font-weight:700;font-size:14px;color:#F1F5F9"></div>
+              <div id="share-card-data" style="font-size:11px;color:#94A3B8"></div>
+            </div>
+            <div style="margin-left:auto;text-align:right">
+              <div style="font-size:11px;font-weight:800;color:#F5C518;letter-spacing:.04em">INSTA</div>
+              <div style="font-size:11px;font-weight:800;color:#F1F5F9;letter-spacing:.04em;margin-top:-2px">RDO</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
+            <div style="background:rgba(255,255,255,.06);border-radius:8px;padding:7px 10px">
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#64748B;margin-bottom:2px">Obra</div>
+              <div id="share-card-obra" style="font-size:12px;font-weight:600;color:#F1F5F9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+            </div>
+            <div style="background:rgba(255,255,255,.06);border-radius:8px;padding:7px 10px">
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#64748B;margin-bottom:2px">Empresa</div>
+              <div id="share-card-empresa" style="font-size:12px;font-weight:600;color:#F1F5F9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
+            </div>
+            <div style="background:rgba(255,255,255,.06);border-radius:8px;padding:7px 10px;grid-column:1/-1">
+              <div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#64748B;margin-bottom:2px">Frente</div>
+              <div id="share-card-frente" style="font-size:12px;font-weight:600;color:#F1F5F9"></div>
+            </div>
+          </div>
+          <div id="share-card-desc-wrap" style="display:none;background:rgba(255,255,255,.04);border-radius:8px;padding:8px 10px;border-left:3px solid #F5C518">
+            <div id="share-card-desc" style="font-size:12px;color:#CBD5E1;line-height:1.5"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:14px 16px 20px;display:flex;gap:10px">
+      <button class="btn btp" style="flex:1;gap:8px;display:flex;align-items:center;justify-content:center" onclick="executarCompartilhar()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        Compartilhar
+      </button>
+      <button class="btn bts" style="flex:1;gap:8px;display:flex;align-items:center;justify-content:center" onclick="copiarTextoPost()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copiar texto
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: NOTIFICACOES -->
 <div id="modal-notificacoes" class="moverlay hidden moverlay-slide" onclick="if(event.target===this)closeModal('modal-notificacoes')">
   <div class="mbox-slide">
@@ -1932,9 +2013,10 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
       <label class="fl">Permissoes de Acesso</label>
       <div id="edit-user-permissoes" style="display:flex;flex-direction:column;gap:10px;background:var(--s2);padding:12px;border-radius:var(--rs);border:1px solid var(--bd)">
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="edit-perm-cadastro" style="width:18px;height:18px"> <span>Cadastros (Obras, Empresas, Frentes)</span></label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="edit-perm-gerenciar" style="width:18px;height:18px"> <span>Gerenciar (Sistema e Relatorios)</span></label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="edit-perm-gerenciar" style="width:18px;height:18px"> <span>Gerenciar (Sistema e Relatórios)</span></label>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="edit-perm-nova" style="width:18px;height:18px"> <span>Nova (Pode criar postagens)</span></label>
-        <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="edit-perm-historico" style="width:18px;height:18px"> <span>Historico (Acesso aos registros)</span></label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="edit-perm-historico" style="width:18px;height:18px"> <span>Histórico (Acesso aos registros)</span></label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;border-top:1px solid var(--bd);padding-top:10px"><input type="checkbox" id="edit-perm-ia" style="width:18px;height:18px"> <span>Melhorar com IA <span style="font-size:11px;color:var(--txm)">(botão de IA em registros)</span></span></label>
       </div>
     </div>
     <div class="fg">
@@ -2351,7 +2433,7 @@ function toSbFotoMeta(photo, relatorioId, remoteId, ordem) {
 }
 function fromSbRelatorio(r) { let fotoIds = []; try { fotoIds = Array.isArray(r.foto_ids) ? r.foto_ids.map(S) : (typeof r.foto_ids === 'string' ? JSON.parse(r.foto_ids || '[]').map(S) : []); } catch(_) { fotoIds = []; } return { id: S(r.id), obraId: S(r.obra_id || ''), empresaId: S(r.empresa_id || ''), frenteId: S(r.frente_id || ''), frenteCustom: r.frente_custom || '', clima: r.clima || '', turno: r.turno || '', desc: r.descricao_original || r.descricao || '', descFinal: r.descricao_final || r.descricao_original || r.descricao || '', obs: r.observacao || '', dataRegistro: r.data_registro || r.data || '', horaRegistro: r.hora_registro || r.hora || '', fotoIds, ativa: r.ativo !== false && r.ativa !== false, ativo: r.ativo !== false && r.ativa !== false, createdAt: r.created_at || r.createdAt || '', updatedAt: r.updated_at || r.updatedAt || '', exifUsed: false, createdBy: r.usuario_login || r.autor_login || '' }; }
 function toSbRelatorio(r) { return { id: S(r.id), obra_id: S(r.obraId || '') || null, empresa_id: S(r.empresaId || '') || null, frente_id: S(r.frenteId || '') || null, frente_custom: r.frenteCustom || null, usuario_login: r.createdBy || normalizeLogin(sessionStorage.getItem('rdo_user') || ''), clima: r.clima || '', turno: r.turno || '', descricao_original: r.desc || r.descricao || '', descricao_final: r.descFinal || r.desc || r.descricao || '', observacao: r.obs || r.observacao || '', data_registro: r.dataRegistro || r.data || null, hora_registro: r.horaRegistro || r.hora || null, foto_ids: Array.isArray(r.fotoIds) ? r.fotoIds : [], foto_count: Array.isArray(r.fotoIds) ? r.fotoIds.length : 0, ativo: r.ativa !== false && r.ativo !== false }; }
-const USER_PERMISSIONS = ['cadastro', 'gerenciar', 'nova', 'historico'];
+const USER_PERMISSIONS = ['cadastro', 'gerenciar', 'nova', 'historico', 'ia'];
 function normalizePermissoes(input, login) {
     let raw = [];
     if (Array.isArray(input)) raw = input;
@@ -4395,6 +4477,12 @@ async function loadSeguidoresState() {
 }
 function getPerfilFollowCounts(login) {
     const alvo = normalizeLogin(login || '');
+    const allUsers = typeof getUsers === 'function' ? getUsers() : [];
+    function isInativo(l) {
+        if (typeof isUserDeadLocally === 'function' && isUserDeadLocally(l)) return true;
+        const u = allUsers.find(u => normalizeLogin(u.login) === l);
+        return u && u.ativo === false;
+    }
     const rows = [];
     if (Array.isArray(STATE.seguidores)) rows.push(...STATE.seguidores);
     if (Array.isArray(STATE.rdo_seguidores)) rows.push(...STATE.rdo_seguidores);
@@ -4405,8 +4493,8 @@ function getPerfilFollowCounts(login) {
         if (!r || r.ativo === false || r.ativa === false) return;
         const seguidor = normalizeLogin(r.seguidor_login || r.seguidorLogin || r.seguidor || r.follower_login || r.follower || '');
         const seguido = normalizeLogin(r.seguido_login || r.seguidoLogin || r.seguido || r.following_login || r.following || '');
-        if (seguido === alvo && seguidor) seguidores.add(seguidor);
-        if (seguidor === alvo && seguido) seguindo.add(seguido);
+        if (seguido === alvo && seguidor && !isInativo(seguidor)) seguidores.add(seguidor);
+        if (seguidor === alvo && seguido && !isInativo(seguido)) seguindo.add(seguido);
     });
     return { seguidores: seguidores.size, seguindo: seguindo.size };
 }
@@ -5123,7 +5211,13 @@ function renderSeguidoresModal() {
     document.getElementById('seguidores-tab-seguidores').classList.toggle('active', seguidoresModalTab === 'seguidores');
     document.getElementById('seguidores-tab-seguindo').classList.toggle('active', seguidoresModalTab === 'seguindo');
     const set = seguidoresModalTab === 'seguindo' ? getFollowingLogins(loginPerfil) : getFollowerLogins(loginPerfil);
-    const logins = Array.from(set).sort((a, b) => {
+    const allUsers = typeof getUsers === 'function' ? getUsers() : [];
+    const logins = Array.from(set).filter(l => {
+        if (typeof isUserDeadLocally === 'function' && isUserDeadLocally(l)) return false;
+        const u = allUsers.find(u => normalizeLogin(u.login) === normalizeLogin(l));
+        if (u && u.ativo === false) return false;
+        return true;
+    }).sort((a, b) => {
         const pa = getPerfilByLoginForFollow(a);
         const pb = getPerfilByLoginForFollow(b);
         return String(pa.nome || a).localeCompare(String(pb.nome || b));
@@ -5260,10 +5354,12 @@ function renderFeedPosts(posts, containerId = 'feed-container') {
         const comentariosReg = comentarios.filter(c => socialRegistroId(c) === regId && c.ativo !== false);
         const comentariosCount = comentariosReg.length;
 
+        const compartilharSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`;
         const accoesHtml = `
         <div class="insta-actions">
           <span class="feed-action-wrap"><button class="insta-action ${jaCurtiu ? 'liked' : ''} btn-curtida" data-liked="${jaCurtiu ? '1' : '0'}" data-registro-id="${esc(regId)}" onclick="toggleLike('${esc(regId)}')" type="button">${coracaoSvg}</button><span class="feed-action-count feed-like-count" data-registro-id="${esc(regId)}" style="${curtidas === 0 ? 'display:none' : ''}">${curtidas}</span></span>
           <span class="feed-action-wrap"><button class="insta-action" onclick="openComments('${esc(regId)}')" type="button">${balaoSvg}</button><span class="feed-action-count feed-comment-count" data-registro-id="${esc(regId)}" style="${comentariosCount === 0 ? 'display:none' : ''}">${comentariosCount}</span></span>
+          <span class="feed-action-wrap" style="margin-left:auto"><button class="insta-action" onclick="compartilharPost('${esc(regId)}')" type="button" title="Compartilhar">${compartilharSvg}</button></span>
         </div>`;
         const firstLike = curtidasReg[0] ? socialLogin(curtidasReg[0]) : '';
         const likedByLogins = curtidasReg.map(l => socialLogin(l)).filter(Boolean);
@@ -5279,6 +5375,10 @@ function renderFeedPosts(posts, containerId = 'feed-container') {
           ${comentariosReg.length > 2 ? `<button class="insta-comments-more" onclick="openComments('${esc(regId)}')" type="button">Ver todos os ${comentariosReg.length} comentários</button>` : ''}
           ${comentariosReg.slice(0, 2).map(c => `<div class="feed-comments-preview-item"><strong>@${esc(c.usuario_login)}</strong> ${esc((c.texto || '').substring(0, 60))}${(c.texto || '').length > 60 ? '...' : ''}</div>`).join('')}
         </div>` : '';
+        // Cache para compartilhamento
+        if (!window._feedPostsCache) window._feedPostsCache = {};
+        window._feedPostsCache[regId] = { reg, perfil, obraNome, empresaNome, frenteNome, fotos: Array.isArray(reg.fotos) ? reg.fotos : [] };
+
         card.innerHTML = headerHtml + fotosHtml + accoesHtml + descHtml + metaHtml + legendaHtml + previewHtml;
         // Setar URLs no dataset do wrap (para o onclick da img ler) e bind swipe
         const wrap = card.querySelector('.feed-photo-wrap');
@@ -5365,6 +5465,102 @@ async function buscarCurtidaOnline(registroId, currentLogin) {
         return null;
     }
 }
+let _shareCurrentData = null;
+
+function compartilharPost(regId) {
+    const data = (window._feedPostsCache || {})[regId];
+    if (!data) { toast('Dados do post não disponíveis.', 'warn'); return; }
+    _shareCurrentData = data;
+    const { reg, perfil, obraNome, empresaNome, frenteNome, fotos } = data;
+
+    // Foto
+    const fotoWrap = document.getElementById('share-card-foto');
+    const fotoImg  = document.getElementById('share-card-img');
+    const primeiraFoto = fotos && fotos.length ? (fotos[0].url || getPhotoUrl(fotos[0])) : null;
+    if (primeiraFoto && fotoWrap && fotoImg) {
+        fotoImg.src = primeiraFoto;
+        fotoWrap.style.display = 'block';
+    } else if (fotoWrap) {
+        fotoWrap.style.display = 'none';
+    }
+
+    // Avatar
+    const avatarEl = document.getElementById('share-card-avatar');
+    if (avatarEl) {
+        if (perfil && perfil.avatar_url) {
+            avatarEl.innerHTML = `<img src="${perfil.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+        } else {
+            avatarEl.textContent = ((perfil.nome || perfil.login || '?').charAt(0)).toUpperCase();
+        }
+    }
+
+    // Textos
+    const nome = perfil.nome || perfil.login || '';
+    const data_ = reg.dataRegistro || reg.data || '';
+    const hora  = reg.hora ? ' às ' + reg.hora : '';
+    const desc  = reg.descricao || reg.descFinal || reg.desc || '';
+
+    document.getElementById('share-card-nome').textContent  = nome;
+    document.getElementById('share-card-data').textContent  = (data_ ? fmtDate(data_) + hora : '');
+    document.getElementById('share-card-obra').textContent  = obraNome;
+    document.getElementById('share-card-empresa').textContent = empresaNome;
+    document.getElementById('share-card-frente').textContent  = frenteNome;
+
+    const descWrap = document.getElementById('share-card-desc-wrap');
+    const descEl   = document.getElementById('share-card-desc');
+    if (desc && descWrap && descEl) {
+        descEl.textContent = desc.length > 200 ? desc.substring(0, 200) + '...' : desc;
+        descWrap.style.display = 'block';
+    } else if (descWrap) {
+        descWrap.style.display = 'none';
+    }
+
+    openModal('modal-compartilhar');
+}
+
+function _buildShareText() {
+    if (!_shareCurrentData) return '';
+    const { reg, perfil, obraNome, empresaNome, frenteNome } = _shareCurrentData;
+    const nome  = perfil.nome || perfil.login || '';
+    const data_ = reg.dataRegistro || reg.data || '';
+    const hora  = reg.hora ? ' às ' + reg.hora : '';
+    const desc  = reg.descricao || reg.descFinal || reg.desc || '';
+    let txt = `📋 *InstaRDO — Registro de Obra*\n\n`;
+    txt += `👤 ${nome}\n`;
+    if (data_) txt += `📅 ${fmtDate(data_)}${hora}\n`;
+    txt += `🏗️ Obra: ${obraNome}\n`;
+    txt += `🏢 Empresa: ${empresaNome}\n`;
+    txt += `⚙️ Frente: ${frenteNome}\n`;
+    if (desc) txt += `\n📝 ${desc}`;
+    return txt;
+}
+
+async function executarCompartilhar() {
+    const txt = _buildShareText();
+    if (!txt) return;
+    if (navigator.share) {
+        try {
+            await navigator.share({ title: 'InstaRDO — Registro de Obra', text: txt });
+            return;
+        } catch(e) {
+            if (e.name === 'AbortError') return;
+        }
+    }
+    // fallback: copia para clipboard
+    await copiarTextoPost();
+}
+
+async function copiarTextoPost() {
+    const txt = _buildShareText();
+    if (!txt) return;
+    try {
+        await navigator.clipboard.writeText(txt);
+        toast('Texto copiado!', 'ok');
+    } catch(e) {
+        toast('Não foi possível copiar automaticamente.', 'warn');
+    }
+}
+
 async function toggleLike(registroId) {
     if (!CoreRules.requireOnlineAction('curtir')) return;
     normalizeSocialState();
@@ -6646,6 +6842,10 @@ async function addUserFromSettings() {
     if (typeof executarBusca === 'function') executarBusca();
 
     toast(existing && existing.ativo === false ? 'Usuário reativado!' : 'Usuário criado!', 'ok');
+
+    // Fechar formulário de novo cadastro
+    const form = document.getElementById('novo-usuario-form');
+    if (form) form.style.display = 'none';
 }
 
 async function renderUsersList() {
@@ -6961,6 +7161,7 @@ async function saveUserEdit() {
     renderUsersList();
 
     if (typeof loadFeed === 'function') loadFeed();
+    if (typeof renderHistorico === 'function') renderHistorico();
     if (typeof executarBusca === 'function') executarBusca();
 
     toast('Usuário atualizado!', 'ok');
@@ -6968,110 +7169,125 @@ async function saveUserEdit() {
 
 async function deleteUserAdmin(login) {
     login = normalizeLogin(login);
+    if (!login) { toast('Usuário inválido.', 'err'); return; }
+    if (login === MESTRE_LOGIN) { toast('O usuário Mestre não pode ser excluído.', 'err'); return; }
+    const currentLogin = normalizeLogin(typeof getCurrentUserLogin === 'function' ? getCurrentUserLogin() : '');
+    if (login === currentLogin) { toast('Você não pode excluir o próprio usuário logado.', 'err'); return; }
 
-    // ========== PATCH RBAC UI: Proteger Marcelo ==========
-    if (login === MESTRE_LOGIN) {
-        toast('O usuário Mestre não pode ser excluído.', 'err');
-        return;
-    }
-    // ==================================================
-
-    if (!login) {
-        toast('Usuário inválido.', 'err');
-        return;
-    }
-
-    const currentLogin = typeof getCurrentUserLogin === 'function' ? normalizeLogin(getCurrentUserLogin()) : '';
-    if (login === currentLogin) {
-        toast('Você não pode excluir o próprio usuário logado.', 'err');
-        return;
-    }
-
-    const ok = confirm(`Inativar o usuário @${login} e ocultar todas as suas postagens do Feed, Histórico, Perfil e Stories?`);
+    const ok = confirm(`Remover @${login} da plataforma?\n\nIsso irá:\n• Apagar curtidas, comentários e conexões de seguidores\n• Ocultar todas as postagens\n• Arquivar o usuário em "Excluídos"\n\nO usuário não conseguirá mais logar.`);
     if (!ok) return;
 
+    toast('Removendo usuário...', 'info', 8000);
+    const enc = encodeURIComponent;
+
+    try {
+        // 1. Buscar dados completos para arquivar
+        let dadosUsuario = null, dadosPerfil = null;
+        try {
+            const ru = await sbRequest(`/rest/v1/rdo_usuarios?login=eq.${enc(login)}&limit=1`);
+            dadosUsuario = Array.isArray(ru) ? ru[0] : ru;
+        } catch (_) {}
+        try {
+            const rp = await sbRequest(`/rest/v1/rdo_perfis?login=eq.${enc(login)}&limit=1`);
+            dadosPerfil = Array.isArray(rp) ? rp[0] : rp;
+        } catch (_) {}
+
+        // 2. Arquivar em rdo_usuarios_excluidos
+        await sbRequest('/rest/v1/rdo_usuarios_excluidos', {
+            method: 'POST',
+            headers: { Prefer: 'return=minimal' },
+            body: JSON.stringify({
+                login,
+                account_id: dadosUsuario?.account_id || dadosPerfil?.account_id || null,
+                nome: dadosUsuario?.nome || dadosPerfil?.nome || login,
+                excluido_por: currentLogin,
+                excluido_em: new Date().toISOString(),
+                dados_usuario: dadosUsuario || null,
+                dados_perfil: dadosPerfil || null
+            })
+        }).catch(() => {});
+
+        // 3. Limpar dados sociais no Supabase
+        await Promise.allSettled([
+            sbRequest(`/rest/v1/rdo_seguidores?seguidor_login=eq.${enc(login)}`, { method: 'DELETE' }),
+            sbRequest(`/rest/v1/rdo_seguidores?seguido_login=eq.${enc(login)}`,  { method: 'DELETE' }),
+            sbRequest(`/rest/v1/rdo_curtidas?usuario_login=eq.${enc(login)}`,    { method: 'DELETE' }),
+            sbRequest(`/rest/v1/rdo_comentarios?usuario_login=eq.${enc(login)}`, { method: 'DELETE' }),
+            sbRequest(`/rest/v1/rdo_notificacoes?origem_login=eq.${enc(login)}`, { method: 'DELETE' }),
+            sbRequest(`/rest/v1/rdo_notificacoes?destino_login=eq.${enc(login)}`,{ method: 'DELETE' }),
+        ]);
+
+        // 4. Ocultar postagens do usuário
+        await sbRequest(`/rest/v1/rdo_relatorios?usuario_login=eq.${enc(login)}`, {
+            method: 'PATCH', body: JSON.stringify({ ativo: false })
+        }).catch(() =>
+            sbRequest(`/rest/v1/relatorios?usuario_login=eq.${enc(login)}`, {
+                method: 'PATCH', body: JSON.stringify({ ativo: false })
+            }).catch(() => {})
+        );
+
+        // 5. Remover perfil e usuário do Supabase
+        await Promise.allSettled([
+            sbRequest(`/rest/v1/rdo_perfis?login=eq.${enc(login)}`,   { method: 'DELETE' }),
+            sbRequest(`/rest/v1/rdo_usuarios?login=eq.${enc(login)}`,  { method: 'DELETE' }),
+        ]);
+
+    } catch (e) {
+        console.warn('[DELETE USER] Falha parcial online:', e);
+    }
+
+    // 6. Limpar estado local
+    let users = getUsers().filter(u => normalizeLogin(u.login) !== login);
+    saveUsers(users);
     markUserDeadLocally(login);
 
-    // 1. Inativar no cadastro local. Se era fantasma só do rdo_perfis, cria marca local inativa.
-    let users = getUsers();
-    const idx = users.findIndex(u => normalizeLogin(u.login) === login);
-    if (idx >= 0) {
-        users[idx] = {
-            ...users[idx],
-            ativo: false,
-            updatedAt: new Date().toISOString()
-        };
-    } else {
-        users.push({
-            login,
-            nome: login,
-            perfil: 'usuario',
-            ativo: false,
-            updatedAt: new Date().toISOString()
+    if (typeof socialState !== 'undefined') {
+        delete socialState?.perfis?.[login];
+        if (Array.isArray(socialState.seguidores))
+            socialState.seguidores = socialState.seguidores.filter(s =>
+                normalizeLogin(s.seguidor_login) !== login && normalizeLogin(s.seguido_login) !== login);
+        if (Array.isArray(socialState.curtidas))
+            socialState.curtidas = socialState.curtidas.filter(c => normalizeLogin(c.usuario_login) !== login);
+        if (Array.isArray(socialState.comentarios))
+            socialState.comentarios = socialState.comentarios.filter(c => normalizeLogin(c.usuario_login) !== login);
+    }
+
+    if (Array.isArray(STATE?.relatorios))
+        STATE.relatorios.forEach(r => {
+            if (normalizeLogin(r.createdBy || r.login || r.usuario) === login) r.ativo = r.ativa = false;
         });
-    }
-    saveUsers(users);
 
-    // 2. Inativar postagens do usuário no STATE e IndexedDB
-    const regs = Array.isArray(STATE.relatorios) ? STATE.relatorios : [];
-    const userRegs = regs.filter(r => normalizeLogin(r.createdBy || r.login || r.usuario) === login && r.ativa !== false);
+    if (typeof limparSocialOrfaoLocal === 'function') limparSocialOrfaoLocal();
 
-    for (const reg of userRegs) {
-        reg.ativa = false;
-        reg.ativo = false;
-        reg.updatedAt = new Date().toISOString();
-
-        await idbPut('relatorios', reg).catch(() => {});
-
-        try {
-            await sbUpsert('relatorios', reg);
-        } catch (e) {
-            console.warn('[USUÁRIOS] Falha ao sincronizar inativação de registro:', e);
-        }
-    }
-
-    // 3. Remover/inativar da memória social local
-    if (typeof socialState !== 'undefined' && socialState.perfis) {
-        if (socialState.perfis[login]) {
-            socialState.perfis[login].ativo = false;
-        }
-        delete socialState.perfis[login];
-    }
-
-    // 4. Inativar usuário e perfil na nuvem. rdo_perfis precisa conflito por login, não por id.
-    try {
-        await sbUpsert('usuarios', {
-            login,
-            ativo: false,
-            updatedAt: new Date().toISOString()
-        }).catch(() => {});
-
-        await upsertRdoPerfilByLogin({
-            login,
-            nome: login,
-            permissao: 'usuario',
-            ativo: false,
-            updatedAt: new Date().toISOString()
-        }).catch(() => {});
-    } catch (e) {
-        console.warn('[USUÁRIOS] Falha ao sincronizar usuário inativado:', e);
-    }
-
-    // ========== PATCH SOCIAL FINAL: Limpar social órfão ==========
-    limparSocialOrfaoLocal();
-    // ==================================================
-
-    // 5. Atualizar interface
-    toast('Usuário inativado e postagens ocultadas.', 'ok');
-
+    toast(`@${login} removido da plataforma.`, 'ok');
     if (typeof renderUsersList === 'function') renderUsersList();
     if (typeof loadFeed === 'function') loadFeed();
     if (typeof renderHistorico === 'function') renderHistorico();
-    if (typeof executarBusca === 'function') executarBusca();
+}
 
-    const perfilAtual = typeof perfilVisualizadoLogin !== 'undefined' ? perfilVisualizadoLogin : '';
-    if (perfilAtual === login && typeof abrirMeuPerfil === 'function') {
-        abrirMeuPerfil();
+async function loadExcluidos() {
+    const container = document.getElementById('excluidos-list');
+    if (!container) return;
+    container.innerHTML = '<p class="txm tsm">Carregando...</p>';
+    try {
+        const rows = await sbRequest('/rest/v1/rdo_usuarios_excluidos?order=excluido_em.desc');
+        const list = Array.isArray(rows) ? rows : [];
+        if (!list.length) {
+            container.innerHTML = '<p class="txm tsm">Nenhum usuário excluído registrado.</p>';
+            return;
+        }
+        container.innerHTML = list.map(r => `
+            <div style="background:var(--s2);border:1px solid var(--bd);border-radius:var(--rs);padding:10px;margin-top:8px">
+                <div style="font-weight:600;font-size:14px">${esc(r.nome || r.login)}</div>
+                <div style="font-size:11px;color:var(--txm)">
+                    @${esc(r.login)}
+                    ${r.account_id ? `· ID: ${esc(r.account_id)}` : ''}
+                    · Removido por @${esc(r.excluido_por || '?')}
+                    · ${r.excluido_em ? new Date(r.excluido_em).toLocaleString('pt-BR') : ''}
+                </div>
+            </div>`).join('');
+    } catch (e) {
+        container.innerHTML = `<p class="txm tsm">Erro ao carregar: ${e?.message || e}</p>`;
     }
 }
 
@@ -8262,13 +8478,37 @@ function limparDescricaoRegistro() {
 function atualizarVisibilidadeBtnAI() {
     const btn = document.getElementById('btn-ai');
     if (!btn) return;
-    const isMestre = normalizeLogin(getCurrentUserLogin()) === normalizeLogin(MESTRE_LOGIN);
-    btn.style.display = isMestre ? 'inline-flex' : 'none';
+    const login = normalizeLogin(getCurrentUserLogin());
+    const isMestre = login === normalizeLogin(MESTRE_LOGIN);
+    const user = getUsers().find(u => normalizeLogin(u.login) === login);
+    const temIA = isMestre || (Array.isArray(user?.permissoes) && user.permissoes.includes('ia'));
+    btn.style.display = temIA ? 'inline-flex' : 'none';
+}
+
+function toggleNovoUsuarioForm() {
+    const form = document.getElementById('novo-usuario-form');
+    if (!form) return;
+    const visible = form.style.display !== 'none';
+    form.style.display = visible ? 'none' : 'block';
+    if (!visible) {
+        document.getElementById('new-user-login').value = '';
+        document.getElementById('new-user-pass').value = '';
+        document.getElementById('new-user-name').value = '';
+        ['cadastro','gerenciar','nova','historico','ia'].forEach(p => {
+            const el = document.getElementById('new-perm-' + p);
+            if (el) el.checked = (p === 'nova' || p === 'historico');
+        });
+        const seguirEl = document.getElementById('new-seguir-mestre');
+        if (seguirEl) seguirEl.checked = true;
+    }
 }
 
 async function melhorarComIA() {
-    const isMestre = normalizeLogin(getCurrentUserLogin()) === normalizeLogin(MESTRE_LOGIN);
-    if (!isMestre) return;
+    const login = normalizeLogin(getCurrentUserLogin());
+    const isMestre = login === normalizeLogin(MESTRE_LOGIN);
+    const user = getUsers().find(u => normalizeLogin(u.login) === login);
+    const temIA = isMestre || (Array.isArray(user?.permissoes) && user.permissoes.includes('ia'));
+    if (!temIA) return;
     const descEl = document.getElementById('reg-desc');
     const obsEl  = document.getElementById('reg-obs');
     const outEl  = document.getElementById('desc-melhorada');
@@ -12234,7 +12474,7 @@ else {
     var termo = safeS(document.getElementById('ger-user-search')?.value || '').trim().toLowerCase();
 
     users = (users || [])
-      .filter(function(u){ return u && u.login && u.ativo !== false; })
+      .filter(function(u){ return u && u.login; })
       .filter(function(u){
         if (!termo) return true;
         return safeS(u.nome || '').toLowerCase().includes(termo) || safeS(u.login || '').toLowerCase().includes(termo);
@@ -12248,26 +12488,45 @@ else {
       return;
     }
 
-    container.innerHTML = users.map(function(u){
+    function renderCard(u) {
       var login = safeNormalizeLogin(u.login);
       var serial = (typeof getUserAccountId === 'function' ? getUserAccountId(u) : '') || safeS(u.id || '');
       var role = typeof normalizeRole === 'function' ? normalizeRole(u.perfil || u.permissao || u.role || 'usuario', login) : (u.perfil || 'usuario');
       var roleLabel = typeof labelRole === 'function' ? labelRole(role, login) : role;
       var isMaster = login === MESTRE_LOGIN;
+      var ativo = u.ativo !== false;
+      var dot = '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:' + (ativo ? 'var(--ok)' : 'var(--err)') + ';margin-right:5px;flex-shrink:0"></span>';
       var buttons = isMaster
         ? '<span style="font-size:11px;color:var(--txm)">Mestre protegido</span>'
-        : '<button class="btn bts bxs" onclick="editUserAdmin(\'' + safeEsc(login) + '\')">✏️</button>' +
-          '<button class="btn btd bxs" onclick="deleteUserAdmin(\'' + safeEsc(login) + '\')">🗑️</button>';
+        : '<button class="btn bts bxs" onclick="editUserAdmin(\'' + safeEsc(login) + '\')" title="Editar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button>' +
+          '<button class="btn btd bxs" onclick="deleteUserAdmin(\'' + safeEsc(login) + '\')" title="Remover" style="margin-left:4px"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg></button>';
 
-      return '<div class="ger-user-card">' +
-        '<div>' +
-          '<div style="font-weight:600;font-size:14px">' + safeEsc(u.nome || login) + '</div>' +
-          '<div style="font-size:11px;color:var(--txm)">@' + safeEsc(login) + ' · ' + safeEsc(roleLabel) + '</div>' +
-          (serial ? '<div style="font-size:10px;color:var(--txm);opacity:.72">Serial interno: ' + safeEsc(serial) + '</div>' : '') +
+      return '<div class="ger-user-card" style="opacity:' + (ativo ? '1' : '.65') + '">' +
+        '<div style="display:flex;align-items:center;gap:0;min-width:0">' +
+          dot +
+          '<div style="min-width:0">' +
+            '<div style="font-weight:600;font-size:14px">' + safeEsc(u.nome || login) + '</div>' +
+            '<div style="font-size:11px;color:var(--txm)">@' + safeEsc(login) + ' · ' + safeEsc(roleLabel) + '</div>' +
+            (serial ? '<div style="font-size:10px;color:var(--txm);opacity:.72">Serial: ' + safeEsc(serial) + '</div>' : '') +
+          '</div>' +
         '</div>' +
         '<div class="ger-user-actions">' + buttons + '</div>' +
       '</div>';
-    }).join('');
+    }
+
+    var ativos   = users.filter(function(u){ return u.ativo !== false; });
+    var inativos = users.filter(function(u){ return u.ativo === false; });
+
+    var html = '';
+    html += '<div style="font-size:11px;font-weight:700;color:var(--ok);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;display:flex;align-items:center;gap:6px">' +
+      '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--ok)"></span>Ativos (' + ativos.length + ')</div>';
+    html += ativos.length ? ativos.map(renderCard).join('') : '<p class="txm tsm" style="margin:4px 0 10px">Nenhum usuário ativo.</p>';
+
+    html += '<div style="font-size:11px;font-weight:700;color:var(--err);text-transform:uppercase;letter-spacing:.06em;margin:16px 0 6px;display:flex;align-items:center;gap:6px">' +
+      '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--err)"></span>Inativos (' + inativos.length + ')</div>';
+    html += inativos.length ? inativos.map(renderCard).join('') : '<p class="txm tsm" style="margin:4px 0">Nenhum usuário inativo.</p>';
+
+    container.innerHTML = html;
   };
 
 
