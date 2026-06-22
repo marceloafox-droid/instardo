@@ -7403,10 +7403,12 @@ async function deleteUserAdmin(login) {
             }).catch(() => {})
         );
 
-        // 5. Remover perfil e usuário do Supabase
+        // 5. Inativar perfil e usuário no Supabase.
+        // Não apagar fisicamente: aparelhos novos dependem de rdo_usuarios para login,
+        // e o arquivo em "Excluídos" mantém o histórico administrativo.
         await Promise.allSettled([
-            sbRequest(`/rest/v1/rdo_perfis?login=eq.${enc(login)}`,   { method: 'DELETE' }),
-            sbRequest(`/rest/v1/rdo_usuarios?login=eq.${enc(login)}`,  { method: 'DELETE' }),
+            sbRequest(`/rest/v1/rdo_perfis?login=eq.${enc(login)}`,   { method: 'PATCH', body: JSON.stringify({ ativo: false, updated_at: new Date().toISOString() }) }),
+            sbRequest(`/rest/v1/rdo_usuarios?login=eq.${enc(login)}`, { method: 'PATCH', body: JSON.stringify({ ativo: false, updated_at: new Date().toISOString() }) }),
         ]);
 
     } catch (e) {
@@ -11248,8 +11250,7 @@ async function doLogin() {
     const u = normalizeLogin(((_a = document.getElementById('inp-user')) === null || _a === void 0 ? void 0 : _a.value) || '');
     const p = ((_b = document.getElementById('inp-pass')) === null || _b === void 0 ? void 0 : _b.value) || '';
     const loginErr = document.getElementById('login-err');
-    if (loginErr)
-        loginErr.classList.add('hidden');
+    if (loginErr) loginErr.classList.add('hidden');
     if (!u || !p) {
         if (loginErr) {
             loginErr.textContent = 'Informe usuário e senha.';
@@ -11257,12 +11258,51 @@ async function doLogin() {
         }
         return;
     }
+
     seedUsersIfNeeded();
+
+    let supabaseFalhou = false;
+    try {
+        const onlineUsers = await sbSelect('usuarios');
+        const onlineUser = (onlineUsers || []).find(x => normalizeLogin(x.login) === u && x.senha && S(x.senha) === S(p) && x.ativo !== false);
+        if (onlineUser) {
+            const permissoes = normalizePermissoes(onlineUser, onlineUser.login);
+            const role = roleFromPermissoes(permissoes, onlineUser.login);
+            let local = getUsers().filter(x => normalizeLogin(x.login) !== normalizeLogin(onlineUser.login));
+            local.push({
+                account_id: onlineUser.account_id || onlineUser.accountId || onlineUser.id || makeAccountId(),
+                accountId: onlineUser.account_id || onlineUser.accountId || onlineUser.id || '',
+                login: normalizeLogin(onlineUser.login),
+                senha: S(onlineUser.senha),
+                nome: onlineUser.nome || onlineUser.login,
+                perfil: role,
+                role,
+                permissao: role,
+                permissoes,
+                ativo: onlineUser.ativo !== false,
+                updatedAt: new Date().toISOString()
+            });
+            saveUsers(local);
+            await enterApp(onlineUser);
+            if (typeof window.atualizarVisibilidadeGerenciamento === 'function') window.atualizarVisibilidadeGerenciamento();
+            return;
+        }
+
+        if (loginErr) {
+            loginErr.textContent = 'Usuário ou senha incorretos.';
+            loginErr.classList.remove('hidden');
+        }
+        const inpPass = document.getElementById('inp-pass');
+        if (inpPass) inpPass.value = '';
+        return;
+    } catch (e) {
+        supabaseFalhou = true;
+        console.warn('[LOGIN] Supabase indisponível; tentando fallback local/offline:', e);
+    }
+
     let users = getUsers();
     let user = users.find(x => normalizeLogin(x.login) === u && S(x.senha) === S(p) && x.ativo !== false);
     if (!user) {
-        // Recuperação segura: se o localStorage antigo estiver corrompido,
-        // permite login com os usuários padrão sem apagar os dados do app.
         user = DEFAULT_USERS.find(x => normalizeLogin(x.login) === u && S(x.senha) === S(p) && x.ativo !== false);
         if (user && !users.some(x => normalizeLogin(x.login) === normalizeLogin(user.login))) {
             users.push(Object.assign({}, user));
@@ -11270,42 +11310,18 @@ async function doLogin() {
         }
     }
     if (user) {
-        enterApp(user);
+        toast('Entrando em modo offline. Quando houver conexão, o Supabase será conferido novamente.', 'warn', 5000);
+        await enterApp(user);
         if (typeof window.atualizarVisibilidadeGerenciamento === 'function') window.atualizarVisibilidadeGerenciamento();
         return;
     }
-    try {
-        const onlineUsers = await sbSelect('usuarios').catch(() => []);
-        user = (onlineUsers || []).find(x => normalizeLogin(x.login) === u && x.senha && S(x.senha) === S(p) && x.ativo !== false);
-        if (user) {
-            const local = getUsers();
-            if (!local.some(x => normalizeLogin(x.login) === normalizeLogin(user.login))) {
-                const permissoes = normalizePermissoes(user, user.login);
-                const role = roleFromPermissoes(permissoes, user.login);
-                local.push({ login: normalizeLogin(user.login), senha: S(user.senha), nome: user.nome || user.login, perfil: role, role, permissao: role, permissoes, ativo: user.ativo !== false });
-                saveUsers(local);
-            }
-            enterApp(user);
-            if (typeof window.atualizarVisibilidadeGerenciamento === 'function') {
-                window.atualizarVisibilidadeGerenciamento();
-            }
-            return;
-        }
-    }
-    catch (e) {
-        console.warn('[LOGIN] Supabase indisponível, usando somente local:', e);
-    }
+
     if (loginErr) {
-        loginErr.textContent = 'Usuário ou senha incorretos.';
+        loginErr.textContent = supabaseFalhou ? 'Não foi possível consultar o Supabase neste navegador. Verifique conexão, bloqueadores e permissões do site.' : 'Usuário ou senha incorretos.';
         loginErr.classList.remove('hidden');
     }
     const inpPass = document.getElementById('inp-pass');
-    if (inpPass)
-        inpPass.value = '';
-
-    if (typeof window.atualizarVisibilidadeGerenciamento === 'function') {
-        window.atualizarVisibilidadeGerenciamento();
-    }
+    if (inpPass) inpPass.value = '';
 }
 function doLogout() {
     const ok = window.confirm ? confirm('Sair do sistema?') : true;
@@ -11368,6 +11384,43 @@ async function init() {
             safeStorageSet('sessionStorage', 'rdo_user', safeStorageGet('localStorage', 'rdo_user', ''));
             safeStorageSet('sessionStorage', 'rdo_role', safeStorageGet('localStorage', 'rdo_role', ''));
             safeStorageSet('sessionStorage', 'rdo_current_user', safeStorageGet('localStorage', 'rdo_current_user', ''));
+        }
+    }
+    if (safeStorageGet('sessionStorage', 'rdo_auth', '') === '1' && getCurrentUser()) {
+        const cachedUser = getCurrentUser();
+        let sessaoValida = true;
+        try {
+            const onlineUsers = await sbSelect('usuarios');
+            const remoteUser = (onlineUsers || []).find(x => normalizeLogin(x.login) === normalizeLogin(cachedUser.login));
+            if (!remoteUser || remoteUser.ativo === false) {
+                sessaoValida = false;
+            } else {
+                const permissoes = normalizePermissoes(remoteUser, remoteUser.login);
+                const perfil = roleFromPermissoes(permissoes, remoteUser.login);
+                const current = { login: normalizeLogin(remoteUser.login), nome: remoteUser.nome || remoteUser.login, perfil, role: perfil, permissao: perfil, permissoes };
+                RDO_MEMORY_SESSION.auth = true;
+                RDO_MEMORY_SESSION.user = current;
+                safeStorageSet('sessionStorage', 'rdo_user', current.login);
+                safeStorageSet('sessionStorage', 'rdo_role', perfil);
+                safeStorageSet('sessionStorage', 'rdo_current_user', JSON.stringify(current));
+                safeStorageSet('localStorage', 'rdo_user', current.login);
+                safeStorageSet('localStorage', 'rdo_role', perfil);
+                safeStorageSet('localStorage', 'rdo_current_user', JSON.stringify(current));
+            }
+        } catch (e) {
+            console.warn('[BOOT] Não foi possível validar sessão no Supabase; mantendo fallback local:', e);
+        }
+        if (!sessaoValida) {
+            safeStorageRemove('sessionStorage', 'rdo_auth');
+            safeStorageRemove('sessionStorage', 'rdo_user');
+            safeStorageRemove('sessionStorage', 'rdo_role');
+            safeStorageRemove('sessionStorage', 'rdo_current_user');
+            safeStorageRemove('localStorage', 'rdo_auth');
+            safeStorageRemove('localStorage', 'rdo_user');
+            safeStorageRemove('localStorage', 'rdo_role');
+            safeStorageRemove('localStorage', 'rdo_current_user');
+            safeStorageRemove('localStorage', 'instaRDO_user');
+            safeStorageRemove('localStorage', 'instaRDO_role');
         }
     }
     if (safeStorageGet('sessionStorage', 'rdo_auth', '') === '1' && getCurrentUser()) {
@@ -13949,3 +14002,6 @@ document.addEventListener('DOMContentLoaded', () => { loadChatPalavroes().catch(
 
 </body>
 </html>
+
+
+
