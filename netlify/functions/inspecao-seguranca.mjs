@@ -112,6 +112,23 @@ function extractOutputText(data) {
   return chunks.join('\n').trim();
 }
 
+function parseJsonOutput(output) {
+  const raw = String(output || '').trim();
+  if (!raw) throw Object.assign(new Error('Resposta vazia da IA.'), { statusCode: 502 });
+  try { return JSON.parse(raw); } catch (_) {}
+  const fenceRe = new RegExp("```(?:json)?\\s*([\\s\\S]*?)```", "i");
+  const fenced = raw.match(fenceRe);
+  if (fenced && fenced[1]) {
+    try { return JSON.parse(fenced[1].trim()); } catch (_) {}
+  }
+  const first = raw.indexOf('{');
+  const last = raw.lastIndexOf('}');
+  if (first >= 0 && last > first) {
+    try { return JSON.parse(raw.slice(first, last + 1)); } catch (_) {}
+  }
+  throw Object.assign(new Error('A IA retornou uma resposta fora do formato JSON esperado.'), { statusCode: 502 });
+}
+
 async function callOpenAI({ model, input, instructions }) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw Object.assign(new Error('OPENAI_API_KEY ausente no Netlify.'), { statusCode: 500 });
@@ -132,9 +149,7 @@ async function callOpenAI({ model, input, instructions }) {
     throw Object.assign(new Error(message), { statusCode: 502 });
   }
   const output = extractOutputText(data || {});
-  try { return JSON.parse(output); } catch (_) {
-    throw Object.assign(new Error('A IA retornou uma resposta fora do formato JSON esperado.'), { statusCode: 502 });
-  }
+  return parseJsonOutput(output);
 }
 
 function validateAnalysis(raw, racSet) {
