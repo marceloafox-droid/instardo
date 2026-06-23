@@ -1,4 +1,4 @@
-﻿-- InstaRDO - complemento minimo para posts de Inspecao de Seguranca no feed
+-- InstaRDO - complemento minimo para posts de Inspecao de Seguranca no feed
 -- Rode no SQL Editor do Supabase se ainda nao tiver estas colunas/indice.
 
 alter table public.relatorios
