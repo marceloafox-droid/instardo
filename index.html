@@ -1189,6 +1189,50 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
 .rpt-share-sub{padding:0 18px 8px;display:flex;flex-direction:column;gap:6px}
 .rpt-share-sub-btn{padding:12px 14px;background:var(--s2);border:1px solid var(--bd);border-radius:var(--rs);color:var(--tx);font-size:13px;font-weight:500;cursor:pointer;text-align:left;font-family:inherit;transition:background .1s}
 .rpt-share-sub-btn:active{background:var(--s3)}
+
+/* PATCH SEGURANÇA - CSS */
+.reg-tab-bar{display:flex;background:var(--s2);border-radius:var(--rs);padding:3px;margin-bottom:16px;gap:2px}
+.reg-tab{flex:1;padding:10px 8px;border-radius:6px;font-size:13px;font-weight:600;text-align:center;cursor:pointer;color:var(--txm);white-space:nowrap;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:6px;background:none;border:none;font-family:inherit;-webkit-tap-highlight-color:transparent}
+.reg-tab.active{background:var(--s1);color:var(--yellow);box-shadow:var(--ssh)}
+.seg-stepper{display:flex;align-items:center;gap:0;margin-bottom:20px;padding:0 4px}
+.seg-step{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;position:relative}
+.seg-step::after{content:'';position:absolute;top:13px;left:50%;width:100%;height:2px;background:var(--bd);z-index:0}
+.seg-step:last-child::after{display:none}
+.seg-step-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--bd);background:var(--s2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--txm);z-index:1;transition:all .2s}
+.seg-step.active .seg-step-dot{border-color:var(--yellow);background:var(--yellow);color:#111}
+.seg-step.done .seg-step-dot{border-color:var(--ok);background:var(--ok);color:#fff}
+.seg-step-label{font-size:9px;font-weight:600;color:var(--txm);text-transform:uppercase;letter-spacing:.5px;text-align:center;white-space:nowrap}
+.seg-step.active .seg-step-label{color:var(--yellow)}
+.seg-step.done .seg-step-label{color:var(--ok)}
+.seg-tema-sel{display:flex;gap:10px;margin-bottom:16px}
+.seg-tema-opt{flex:1;padding:12px 10px;border-radius:var(--rs);border:2px solid var(--bd);background:var(--s2);cursor:pointer;text-align:center;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.seg-tema-opt.active{border-color:var(--yellow)}
+.seg-tema-opt-preview{height:24px;border-radius:4px;margin-bottom:6px}
+.seg-tema-opt-label{font-size:12px;font-weight:600;color:var(--txd)}
+.seg-tema-vermelho .seg-tema-opt-preview{background:linear-gradient(90deg,#C8184A,#E91E63)}
+.seg-tema-verde .seg-tema-opt-preview{background:linear-gradient(90deg,#1B7A4E,#2E9E6B)}
+.seg-ev-item{background:var(--s2);border:1.5px solid var(--bd);border-radius:var(--rs);padding:12px;margin-bottom:8px;display:flex;gap:10px;align-items:flex-start;transition:border-color .15s}
+.seg-ev-item.selected{border-color:var(--ok);background:var(--okb)}
+.seg-ev-cb{width:18px;height:18px;flex-shrink:0;margin-top:2px;cursor:pointer;accent-color:var(--ok)}
+.seg-ev-text{flex:1;font-size:13px;color:var(--txd);line-height:1.5}
+.seg-ev-fonte{font-size:10px;color:var(--txm);margin-top:3px}
+.seg-ev-conf{font-size:10px;color:var(--ok);font-weight:600}
+.seg-ev-acts{display:flex;gap:4px;flex-shrink:0}
+.rac-badge{display:inline-flex;flex-direction:column;align-items:center;padding:4px 10px;background:var(--errb);border:1px solid var(--err);border-radius:var(--rs);min-width:64px}
+.rac-badge-code{font-family:'Barlow Condensed',sans-serif;font-size:16px;font-weight:800;color:var(--err);letter-spacing:.5px;line-height:1}
+.rac-badge-name{font-size:9px;color:var(--txm);line-height:1.3;text-align:center;max-width:120px;word-break:break-word}
+.rac-badge.verde .rac-badge-code{color:#2E9E6B}
+.rac-badge.verde{background:rgba(46,158,107,.1);border-color:#2E9E6B}
+.seg-card-preview{width:100%;aspect-ratio:16/9;border-radius:var(--rs);overflow:hidden;background:#000;margin-bottom:12px;position:relative}
+.seg-card-preview canvas{width:100%;height:100%;display:block}
+.seg-photo-zone{position:relative;cursor:crosshair;border-radius:var(--rs);overflow:hidden;margin-bottom:12px}
+.seg-photo-zone canvas{width:100%;display:block;max-height:300px;object-fit:contain}
+.seg-ia-loading{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:32px;text-align:center}
+.seg-ia-spinner{width:40px;height:40px;border:3px solid var(--bd);border-top-color:var(--yellow);border-radius:50%;animation:spin .8s linear infinite}
+.seg-rev-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:99px;font-size:11px;font-weight:600;background:var(--warnb);color:var(--warn);border:1px solid rgba(245,158,11,.3)}
+.feed-photo-inspecao{width:100%;aspect-ratio:16/9;object-fit:contain;background:#111;display:block}
+.seg-pane{animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 </style>
 </head>
 <body>
@@ -1301,6 +1345,18 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
 
     <!-- REGISTRAR -->
     <div id="page-registrar" class="page">
+      <!-- PATCH SEGURANÇA - abas -->
+      <div id="registro-tabs" class="reg-tab-bar">
+        <button class="reg-tab active" id="rtab-atividades" onclick="setRegistroTab('atividades')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+          Atividades
+        </button>
+        <button class="reg-tab" id="rtab-seguranca" onclick="setRegistroTab('seguranca')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          Segurança
+        </button>
+      </div>
+      <div id="reg-pane-atividades">
       <div class="sec-tl">Dados da Atividade</div>
 
       <div class="fg">
@@ -1405,6 +1461,189 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
 
       <button class="btn btp btn-wf mt2" onclick="salvarRegistro()" style="padding:16px;font-size:16px">💾 Salvar Registro</button>
       <div style="height:8px"></div>
+      </div><!-- /reg-pane-atividades -->
+
+      <!-- PATCH SEGURANÇA - formulário inspeção (3 etapas) -->
+      <div id="reg-pane-seguranca" class="hidden">
+        <!-- stepper 3 etapas -->
+        <div class="seg-stepper" id="seg-stepper">
+          <div class="seg-step active" id="segstep-1"><div class="seg-step-dot">1</div><span class="seg-step-label">Dados e Foto</span></div>
+          <div class="seg-step" id="segstep-2"><div class="seg-step-dot">2</div><span class="seg-step-label">Análise</span></div>
+          <div class="seg-step" id="segstep-3"><div class="seg-step-dot">3</div><span class="seg-step-label">Card</span></div>
+        </div>
+
+        <!-- ETAPA 1: Dados + Foto -->
+        <div id="seg-pane-1" class="seg-pane">
+          <div class="card">
+            <div class="sec-tl">Dados da ocorrência</div>
+            <div class="fg">
+              <label class="fl fl-req">Obra</label>
+              <select id="seg-obra" class="fs" onchange="updateSegurancaEmpresas()">
+                <option value="">Selecione a obra...</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl fl-req">Empresa</label>
+              <select id="seg-empresa" class="fs" onchange="updateSegurancaFrentes()" disabled>
+                <option value="">Selecione a empresa...</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl fl-req">Frente / Atividade</label>
+              <select id="seg-frente" class="fs" disabled>
+                <option value="">Selecione a frente...</option>
+              </select>
+            </div>
+            <div class="fg">
+              <label class="fl fl-req">RAC aplicável</label>
+              <select id="seg-rac" class="fs">
+                <option value="">Carregando catálogo...</option>
+              </select>
+              <div id="seg-rac-badge-wrap" style="margin-top:8px;display:none"></div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <div class="sec-tl">Foto da ocorrência</div>
+            <div id="seg-photo-preview-wrap" class="hidden">
+              <div class="seg-photo-zone" id="seg-photo-zone">
+                <canvas id="seg-annotation-canvas"></canvas>
+              </div>
+              <p class="txm tsm tc" style="margin:6px 0">Toque na foto para adicionar marcação</p>
+              <div id="seg-annotations-list"></div>
+            </div>
+            <div id="seg-photo-drop" class="photo-drop" onclick="document.getElementById('inp-seg-gallery').click()">
+              <div class="photo-drop-ic">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              </div>
+              <div class="photo-drop-tx">Selecionar foto</div>
+              <div class="photo-drop-sub">Câmera ou galeria · máx 1 foto</div>
+            </div>
+            <input type="file" id="inp-seg-gallery" accept="image/*" capture="environment" style="display:none" onchange="handleSegurancaPhotoSelect(event)">
+            <!-- Data/hora junto da foto -->
+            <div id="seg-exif-alert" class="hidden" style="margin-top:8px"></div>
+            <div class="dtrow mt3" id="seg-datetime-row">
+              <div class="fg" style="margin-bottom:0">
+                <label class="fl fl-req">📅 Data</label>
+                <input type="date" id="seg-data" class="fi">
+              </div>
+              <div class="fg" style="margin-bottom:0">
+                <label class="fl">🕐 Hora</label>
+                <input type="time" id="seg-hora" class="fi">
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <button class="btn btp" style="flex:1" onclick="nextSegStep()" id="seg-btn-next-1">Próximo →</button>
+          </div>
+        </div>
+
+        <!-- ETAPA 2: Análise + Revisão -->
+        <div id="seg-pane-2" class="seg-pane hidden">
+          <div class="card">
+            <div class="sec-tl" style="display:flex;align-items:center;justify-content:space-between">
+              <span>Título e descrição</span>
+              <button id="btn-analisar-ia" onclick="analisarInspecaoComIA()" title="Analisar com IA"
+                style="width:36px;height:36px;border-radius:10px;background:var(--yg);border:1px solid rgba(245,197,24,.4);color:var(--yellow);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/></svg>
+              </button>
+            </div>
+            <div class="fg">
+              <label class="fl fl-req">Título</label>
+              <input type="text" id="seg-titulo" class="fi" placeholder="Ex: Queda de viga durante descarregamento" maxlength="120">
+            </div>
+            <div class="fg">
+              <label class="fl">Descrição inicial</label>
+              <textarea id="seg-desc-original" class="fta" maxlength="300" rows="3" placeholder="Descreva a ocorrência..."></textarea>
+              <div style="text-align:right;font-size:11px;color:var(--txm);margin-top:2px"><span id="seg-desc-count">0</span>/300</div>
+            </div>
+
+            <div id="seg-ia-loading" class="seg-ia-loading hidden">
+              <div class="seg-ia-spinner"></div>
+              <div class="fw6">Analisando com IA...</div>
+            </div>
+
+            <div id="seg-ia-resultado" class="hidden">
+              <div class="div"></div>
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+                <div class="sec-tl" style="margin:0">RAC sugerido</div>
+                <div id="seg-rev-manual-warn" class="hidden"><div class="seg-rev-chip" style="font-size:10px">⚠ Revisão manual</div></div>
+              </div>
+              <div id="seg-rac-sugerido-wrap" style="margin-bottom:12px"></div>
+              <div class="sec-tl" style="margin-top:4px">Evidências</div>
+              <div id="seg-evidencias-list"></div>
+              <div style="display:flex;gap:6px;margin-bottom:10px">
+                <button class="btn bts bsm" onclick="selecionarTodasEvidencias()">Todas</button>
+                <button class="btn bts bsm" onclick="limparSelecaoEvidencias()">Limpar</button>
+                <button class="btn bts bsm" onclick="adicionarEvidenciaManual()">+ Manual</button>
+              </div>
+              <button class="btn btb btn-wf bsm" id="btn-gerar-desc" onclick="gerarDescricaoInspecaoComIA()">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                Gerar descrição final com IA
+              </button>
+            </div>
+          </div>
+
+          <!-- Revisão -->
+          <div class="card" style="margin-top:12px">
+            <div class="sec-tl">Revisão final</div>
+            <div class="fg">
+              <label class="fl fl-req">Título final</label>
+              <input type="text" id="seg-titulo-final" class="fi" maxlength="120">
+            </div>
+            <div class="fg">
+              <label class="fl fl-req">Descrição final <span style="color:var(--txm);font-weight:400">(máx 300)</span></label>
+              <textarea id="seg-desc-final" class="fta" maxlength="300" rows="4"></textarea>
+              <div style="text-align:right;font-size:11px;color:var(--txm);margin-top:2px"><span id="seg-desc-final-count">0</span>/300</div>
+            </div>
+            <div class="sec-tl" style="margin-top:4px">Tema</div>
+            <div class="seg-tema-sel">
+              <div class="seg-tema-opt seg-tema-vermelho active" id="tema-opt-vermelho" onclick="selectSegTema('vermelho')">
+                <div class="seg-tema-opt-preview"></div>
+                <div class="seg-tema-opt-label">Segurança</div>
+              </div>
+              <div class="seg-tema-opt seg-tema-verde" id="tema-opt-verde" onclick="selectSegTema('verde')">
+                <div class="seg-tema-opt-preview"></div>
+                <div class="seg-tema-opt-label">Vale</div>
+              </div>
+            </div>
+            <div id="seg-logo-vale-wrap" class="hidden">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-weight:500">
+                <input type="checkbox" id="seg-logo-vale" style="width:18px;height:18px;cursor:pointer;accent-color:var(--yellow)">
+                <span>Usar Logo Vale no card</span>
+              </label>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <button class="btn bts" style="flex:1" onclick="prevSegStep()">← Voltar</button>
+            <button class="btn btb" style="flex:1" onclick="previewInspectionCard()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              Gerar card
+            </button>
+          </div>
+        </div>
+
+        <!-- ETAPA 3: Card final -->
+        <div id="seg-pane-3" class="seg-pane hidden">
+          <div class="card">
+            <div class="sec-tl">Card de segurança</div>
+            <div class="seg-card-preview" id="seg-card-preview-container">
+              <canvas id="seg-final-canvas"></canvas>
+            </div>
+            <div id="seg-salvar-status" class="hidden" style="margin-bottom:12px"></div>
+          </div>
+          <div style="display:flex;gap:10px;margin-top:4px">
+            <button class="btn bts" style="flex:1" onclick="prevSegStep()">← Voltar</button>
+            <button class="btn bok" style="flex:1" id="btn-salvar-inspecao" onclick="salvarInspecaoSeguranca()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              Salvar e publicar
+            </button>
+          </div>
+        </div>
+      </div><!-- /reg-pane-seguranca -->
+
     </div>
 
     <!-- HISTÓRICO -->
@@ -1717,6 +1956,7 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="new-perm-nova" style="width:18px;height:18px" checked> <span>Nova (Pode criar postagens)</span></label>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="new-perm-historico" style="width:18px;height:18px" checked> <span>Histórico (Acesso aos registros)</span></label>
             <label style="display:flex;align-items:center;gap:8px;cursor:pointer;border-top:1px solid var(--bd);padding-top:10px"><input type="checkbox" id="new-perm-ia" style="width:18px;height:18px"> <span>Melhorar com IA <span style="font-size:11px;color:var(--txm)">(botão de IA em registros)</span></span></label>
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="new-perm-ia_inspecao" style="width:18px;height:18px"> <span>IA Inspeção de Segurança <span style="font-size:11px;color:var(--txm)">(analisar fotos de segurança com IA)</span></span></label>
           </div>
         </div>
         <div class="fg">
@@ -2017,6 +2257,7 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="edit-perm-nova" style="width:18px;height:18px"> <span>Nova (Pode criar postagens)</span></label>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="edit-perm-historico" style="width:18px;height:18px"> <span>Histórico (Acesso aos registros)</span></label>
         <label style="display:flex;align-items:center;gap:8px;cursor:pointer;border-top:1px solid var(--bd);padding-top:10px"><input type="checkbox" id="edit-perm-ia" style="width:18px;height:18px"> <span>Melhorar com IA <span style="font-size:11px;color:var(--txm)">(botão de IA em registros)</span></span></label>
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer"><input type="checkbox" id="edit-perm-ia_inspecao" style="width:18px;height:18px"> <span>IA Inspeção de Segurança <span style="font-size:11px;color:var(--txm)">(analisar fotos de segurança com IA)</span></span></label>
       </div>
     </div>
     <div class="fg">
@@ -2431,9 +2672,9 @@ function toSbFotoMeta(photo, relatorioId, remoteId, ordem) {
         tipo: photo.tipo || 'image/jpeg'
     };
 }
-function fromSbRelatorio(r) { let fotoIds = []; try { fotoIds = Array.isArray(r.foto_ids) ? r.foto_ids.map(S) : (typeof r.foto_ids === 'string' ? JSON.parse(r.foto_ids || '[]').map(S) : []); } catch(_) { fotoIds = []; } return { id: S(r.id), obraId: S(r.obra_id || ''), empresaId: S(r.empresa_id || ''), frenteId: S(r.frente_id || ''), frenteCustom: r.frente_custom || '', clima: r.clima || '', turno: r.turno || '', desc: r.descricao_original || r.descricao || '', descFinal: r.descricao_final || r.descricao_original || r.descricao || '', obs: r.observacao || '', dataRegistro: r.data_registro || r.data || '', horaRegistro: r.hora_registro || r.hora || '', fotoIds, ativa: r.ativo !== false && r.ativa !== false, ativo: r.ativo !== false && r.ativa !== false, createdAt: r.created_at || r.createdAt || '', updatedAt: r.updated_at || r.updatedAt || '', exifUsed: false, createdBy: r.usuario_login || r.autor_login || '' }; }
-function toSbRelatorio(r) { return { id: S(r.id), obra_id: S(r.obraId || '') || null, empresa_id: S(r.empresaId || '') || null, frente_id: S(r.frenteId || '') || null, frente_custom: r.frenteCustom || null, usuario_login: r.createdBy || normalizeLogin(sessionStorage.getItem('rdo_user') || ''), clima: r.clima || '', turno: r.turno || '', descricao_original: r.desc || r.descricao || '', descricao_final: r.descFinal || r.desc || r.descricao || '', observacao: r.obs || r.observacao || '', data_registro: r.dataRegistro || r.data || null, hora_registro: r.horaRegistro || r.hora || null, foto_ids: Array.isArray(r.fotoIds) ? r.fotoIds : [], foto_count: Array.isArray(r.fotoIds) ? r.fotoIds.length : 0, ativo: r.ativa !== false && r.ativo !== false }; }
-const USER_PERMISSIONS = ['cadastro', 'gerenciar', 'nova', 'historico', 'ia'];
+function fromSbRelatorio(r) { let fotoIds = []; try { fotoIds = Array.isArray(r.foto_ids) ? r.foto_ids.map(S) : (typeof r.foto_ids === 'string' ? JSON.parse(r.foto_ids || '[]').map(S) : []); } catch(_) { fotoIds = []; } return { id: S(r.id), obraId: S(r.obra_id || ''), empresaId: S(r.empresa_id || ''), frenteId: S(r.frente_id || ''), frenteCustom: r.frente_custom || '', clima: r.clima || '', turno: r.turno || '', desc: r.descricao_original || r.descricao || '', descFinal: r.descricao_final || r.descricao_original || r.descricao || '', obs: r.observacao || '', dataRegistro: r.data_registro || r.data || '', horaRegistro: r.hora_registro || r.hora || '', fotoIds, ativa: r.ativo !== false && r.ativa !== false, ativo: r.ativo !== false && r.ativa !== false, createdAt: r.created_at || r.createdAt || '', updatedAt: r.updated_at || r.updatedAt || '', exifUsed: false, tipo_postagem: r.tipo_postagem || '', tipoPostagem: r.tipo_postagem || '', inspecaoId: r.inspecao_id || '', inspecao_id: r.inspecao_id || '', createdBy: r.usuario_login || r.autor_login || '' }; }
+function toSbRelatorio(r) { return { id: S(r.id), obra_id: S(r.obraId || '') || null, empresa_id: S(r.empresaId || '') || null, frente_id: S(r.frenteId || '') || null, frente_custom: r.frenteCustom || null, usuario_login: r.createdBy || normalizeLogin(sessionStorage.getItem('rdo_user') || ''), clima: r.clima || '', turno: r.turno || '', descricao_original: r.desc || r.descricao || '', descricao_final: r.descFinal || r.desc || r.descricao || '', observacao: r.obs || r.observacao || '', data_registro: r.dataRegistro || r.data || null, hora_registro: r.horaRegistro || r.hora || null, foto_ids: Array.isArray(r.fotoIds) ? r.fotoIds : [], foto_count: Array.isArray(r.fotoIds) ? r.fotoIds.length : 0, ativo: r.ativa !== false && r.ativo !== false, tipo_postagem: r.tipoPostagem || r.tipo_postagem || null, inspecao_id: r.inspecaoId || r.inspecao_id || null }; }
+const USER_PERMISSIONS = ['cadastro', 'gerenciar', 'nova', 'historico', 'ia', 'ia_inspecao'];
 function normalizePermissoes(input, login) {
     let raw = [];
     if (Array.isArray(input)) raw = input;
@@ -2541,7 +2782,7 @@ async function sbSelect(store) {
         return (rows || []).map(fromSbFrente);
     if (store === 'usuarios')
         return (rows || []).map(fromSbUser);
-    if (store === 'fotos')
+    if (store === 'fotos' || store === 'rdo_fotos')
         return (rows || []).map(fromSbFoto);
     return rows || [];
 }
@@ -5338,7 +5579,7 @@ function renderFeedPosts(posts, containerId = 'feed-container') {
               </div>` : '';
             return `
           <div class="feed-photo-wrap" data-regid="${esc(regId)}" id="fwrap-${esc(regId)}">
-            <img src="${esc(currentUrl)}" class="feed-photo" onclick="_feedFotoClick(this,${currentIndex})" data-idx="${currentIndex}">
+            <img src="${esc(currentUrl)}" class="${(reg.tipo_postagem || reg.tipoPostagem) === 'inspecao_seguranca' ? 'feed-photo-inspecao' : 'feed-photo'}" onclick="_feedFotoClick(this,${currentIndex})" data-idx="${currentIndex}">
             ${totalPhotos > 1 ? `
               <div class="feed-photo-count">${currentIndex + 1}/${totalPhotos}</div>
               <button class="feed-carousel-btn feed-carousel-prev" onclick="prevFeedPhoto('${esc(regId)}')" type="button">‹</button>
@@ -5539,16 +5780,25 @@ async function executarCompartilhar() {
     const txt = _buildShareText();
     if (!txt) return;
 
-    // Tenta gerar imagem do card para compartilhar
-    try {
-        const imgFile = await _gerarImagemCard();
-        if (imgFile && navigator.canShare && navigator.canShare({ files: [imgFile] })) {
-            await navigator.share({ files: [imgFile], title: 'InstaRDO', text: txt });
-            return;
+    // Tenta compartilhar a foto original diretamente (sem gerar card)
+    if (_shareCurrentData) {
+        const { fotos } = _shareCurrentData;
+        const primeiraUrl = fotos && fotos.length ? getPhotoUrl(fotos[0]) : null;
+        if (primeiraUrl) {
+            try {
+                const resp = await fetch(primeiraUrl);
+                const blob = await resp.blob();
+                const ext = (blob.type === 'image/png') ? 'png' : 'jpg';
+                const imgFile = new File([blob], `instardo-foto.${ext}`, { type: blob.type || 'image/jpeg' });
+                if (navigator.canShare && navigator.canShare({ files: [imgFile] })) {
+                    await navigator.share({ files: [imgFile], title: 'InstaRDO', text: txt });
+                    return;
+                }
+            } catch(e) {
+                if (e.name === 'AbortError') return;
+                console.warn('[SHARE] falha ao compartilhar foto:', e);
+            }
         }
-    } catch(e) {
-        if (e.name === 'AbortError') return;
-        console.warn('[SHARE] falha na imagem, tentando só texto:', e);
     }
 
     // Fallback: compartilha só texto
@@ -8951,6 +9201,7 @@ async function renderHistorico() {
           <span class="badge bb">${esc(reg.turno || '')}</span>
           <span class="badge bgr">${esc(reg.clima || '—')}</span>
           ${reg.createdBy ? `<span class="badge bgr" style="font-size:11px">👤 ${esc(reg.createdBy)}</span>` : ''}
+          ${(reg.tipoPostagem === 'inspecao_seguranca' || reg.tipo_postagem === 'inspecao_seguranca') ? `<span class="badge" style="background:#e11d48;color:#fff;font-size:11px;font-weight:700">🦺 Segurança</span>` : ''}
         </div>
         <div style="font-weight:700;font-size:15px;margin-bottom:6px">${esc((emp === null || emp === void 0 ? void 0 : emp.nome) || '(empresa)')} · <span style="color:var(--yellow)">${esc(reg.frenteCustom || (fr === null || fr === void 0 ? void 0 : fr.nome) || reg.frenteId || '(frente)')}</span></div>
         <div class="reg-desc" style="-webkit-line-clamp:3;-webkit-box-orient:vertical;display:-webkit-box;overflow:hidden">${esc(reg.descFinal || reg.desc || 'Sem descrição')}</div>
@@ -9493,6 +9744,7 @@ async function gerarRelatorio() {
     const fTurno = document.getElementById('rpt-turno').value;
     const fClima = document.getElementById('rpt-clima').value;
     let regs = STATE.relatorios.filter(r => r.ativa !== false);
+    regs = regs.filter(r => r.tipoPostagem !== 'inspecao_seguranca' && r.tipo_postagem !== 'inspecao_seguranca');
     if (fObraId) regs = regs.filter(r => S(r.obraId) === S(fObraId));
     if (fData) regs = regs.filter(r => r.dataRegistro === fData);
     if (fEmpId) regs = regs.filter(r => S(r.empresaId) === S(fEmpId));
@@ -13838,6 +14090,985 @@ async function uploadChatRoomPhoto(input) {
 // Pré-carregar palavrões ao iniciar
 document.addEventListener('DOMContentLoaded', () => { loadChatPalavroes().catch(() => {}); });
 // /PATCH CHAT - JS
+
+// ============================================================
+// PATCH SEGURANÇA - JS
+// Módulo de Registro de Segurança / Inspeção
+// ============================================================
+
+const INSPECAO_STATE = {
+  currentStep: 1,
+  currentTab: 'atividades',
+  fotoOriginal: null,
+  fotoPreviewUrl: '',
+  anotacoes: [],
+  evidencias: [],
+  racSugerido: 'N/A',
+  racSelecionado: 'N/A',
+  tema: 'vermelho',
+  usarLogoVale: false,
+  usandoIA: false,
+  analisando: false,
+  racCatalog: [],
+  valeLogoUrl: null,
+  _initialized: false
+};
+
+// ── RAC ──────────────────────────────────────────────────────
+const RAC_CATALOG_DEFAULT = [
+  { codigo: 'RAC 01', nome: 'Trabalhos em altura',                           ordem: 1  },
+  { codigo: 'RAC 02', nome: 'Veículos automotores leves',                    ordem: 2  },
+  { codigo: 'RAC 03', nome: 'Operação de equipamentos móveis',               ordem: 3  },
+  { codigo: 'RAC 04', nome: 'Bloqueio, identificação e zero energia',        ordem: 4  },
+  { codigo: 'RAC 05', nome: 'Içamento de carga',                             ordem: 5  },
+  { codigo: 'RAC 06', nome: 'Espaço confinado',                              ordem: 6  },
+  { codigo: 'RAC 07', nome: 'Proteção de máquinas',                          ordem: 7  },
+  { codigo: 'RAC 08', nome: 'Atividades no terreno',                         ordem: 8  },
+  { codigo: 'RAC 09', nome: 'Explosivos',                                    ordem: 9  },
+  { codigo: 'RAC 10', nome: 'Trabalhos em eletricidade',                     ordem: 10 },
+  { codigo: 'RAC 11', nome: 'Metal líquido',                                 ordem: 11 },
+  { codigo: 'RAC 12', nome: 'Trabalho a quente',                             ordem: 12 },
+  { codigo: 'RAC 13', nome: 'Abertura de linhas e equipamentos',             ordem: 13 },
+  { codigo: 'N/A',    nome: 'Não se aplica a nenhum RAC identificado',       ordem: 99 },
+];
+
+async function loadRacCatalog() {
+  try {
+    const rows = await sbRequest('/rest/v1/rdo_racs?ativo=eq.true&order=ordem.asc', { method: 'GET' });
+    const source = Array.isArray(rows) && rows.length ? rows : RAC_CATALOG_DEFAULT;
+    const normalized = source.map((r, idx) => {
+      const raw = String(r.codigo || r.id || '').trim().toUpperCase();
+      const m = raw.match(/^(?:RAC\s*)?(0?[1-9]|1[0-3])$/);
+      const codigo = raw === 'N/A' ? 'N/A' : (m ? 'RAC ' + String(Number(m[1])).padStart(2, '0') : raw);
+      return { codigo, nome: String(r.nome || r.titulo || r.descricao || '').trim(), ordem: Number(r.ordem || idx + 1) };
+    }).filter(r => r.codigo === 'N/A' || /^RAC (0[1-9]|1[0-3])$/.test(r.codigo));
+    if (!normalized.some(r => r.codigo === 'N/A')) normalized.push({ codigo: 'N/A', nome: 'Nao se aplica a nenhum RAC identificado', ordem: 99 });
+    INSPECAO_STATE.racCatalog = normalized.length ? normalized : RAC_CATALOG_DEFAULT;
+    return INSPECAO_STATE.racCatalog;
+  } catch(e) {
+    console.warn('[RAC] tabela indisponivel, usando catalogo embutido', e);
+    INSPECAO_STATE.racCatalog = RAC_CATALOG_DEFAULT;
+    return INSPECAO_STATE.racCatalog;
+  }
+}
+
+function renderRacOptions(selectId) {
+  const sel = document.getElementById(selectId);
+  if (!sel) return;
+  sel.innerHTML = '<option value="">Selecione o RAC...</option>' +
+    INSPECAO_STATE.racCatalog.map(r => `<option value="${esc(r.codigo)}">${esc(r.codigo)} — ${esc(r.nome)}</option>`).join('');
+}
+
+function getRacByCodigo(codigo) {
+  return INSPECAO_STATE.racCatalog.find(r => r.codigo === codigo) || null;
+}
+
+function validateSuggestedRac(codigo) {
+  if (!codigo) return false;
+  return INSPECAO_STATE.racCatalog.some(r => r.codigo === codigo);
+}
+
+function renderRacBadge(codigo, theme) {
+  const r = getRacByCodigo(codigo) || { codigo: codigo || 'N/A', nome: '' };
+  const cls = (theme || INSPECAO_STATE.tema) === 'verde' ? 'verde' : '';
+  return `<div class="rac-badge ${cls}"><div class="rac-badge-code">${esc(r.codigo)}</div>${r.nome ? `<div class="rac-badge-name">${esc(r.nome)}</div>` : ''}</div>`;
+}
+
+// ── PERMISSÃO ─────────────────────────────────────────────────
+function canUseInspectionAI(userArg) {
+  const loginAtual = typeof getCurrentUserLogin === 'function' ? getCurrentUserLogin() : (typeof currentLogin !== 'undefined' ? currentLogin : '');
+  const user = userArg || (typeof getUsers === 'function' ? getUsers().find(x => normalizeLogin(x.login || x.usuario_login || x.username) === normalizeLogin(loginAtual)) : null) || {};
+  const login = normalizeLogin(user.login || user.usuario_login || user.username || loginAtual);
+  const perfil = String(user.perfil || user.role || user.tipo || user.permissao || '').trim().toLowerCase();
+  if ((typeof MESTRE_LOGIN !== 'undefined' && login === normalizeLogin(MESTRE_LOGIN)) || perfil === 'mestre') return true;
+  if (user.ia_inspecao === true || user.iaInspecao === true) return true;
+  const perms = user.permissoes || user.permissions || user.perfis || [];
+  if (Array.isArray(perms)) return perms.includes('ia_inspecao') || perms.includes('inspecao_ia') || perms.includes('mestre');
+  if (perms && typeof perms === 'object') return perms.ia_inspecao === true || perms.inspecao_ia === true || perms.mestre === true;
+  if (typeof perms === 'string') return perms.split(/[;,\s]+/).includes('ia_inspecao');
+  return false;
+}
+if (window.CoreRules) CoreRules.canUseInspectionAI = canUseInspectionAI;
+
+function setRegistroTab(tab) {
+  INSPECAO_STATE.currentTab = tab;
+  ['atividades', 'seguranca'].forEach(t => {
+    const pane = document.getElementById('reg-pane-' + t);
+    const btn  = document.getElementById('rtab-' + t);
+    if (pane) pane.classList.toggle('hidden', t !== tab);
+    if (btn)  btn.classList.toggle('active', t === tab);
+  });
+  if (tab === 'seguranca') initRegistroSeguranca();
+}
+
+// ── HIERARQUIA OBRA/EMPRESA/FRENTE ────────────────────────────
+function _dedup(arr, keyFn) {
+  const seen = new Set();
+  return (arr || []).filter(x => { const k = keyFn(x); if (seen.has(k)) return false; seen.add(k); return true; });
+}
+
+function loadSegurancaObras() {
+  const sel = document.getElementById('seg-obra');
+  if (!sel) return;
+  const raw = typeof STATE !== 'undefined' && Array.isArray(STATE.obras) ? STATE.obras : [];
+  // 1) filtrar ativas, 2) dedup por ID, 3) dedup por nome normalizado (evita fantasmas do cache)
+  const byId   = _dedup(raw.filter(o => o.ativa !== false && o.ativo !== false && o.deletedAt == null), o => String(o.id));
+  const byNome = _dedup(byId, o => (o.nome || '').trim().toLowerCase())
+    .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt'));
+  sel.innerHTML = '<option value="">Selecione a obra...</option>' +
+    byNome.map(o => `<option value="${esc(o.id)}">${esc(o.nome)}</option>`).join('');
+}
+
+function updateSegurancaEmpresas() {
+  const obraId = document.getElementById('seg-obra')?.value;
+  const selEmp = document.getElementById('seg-empresa');
+  const selFr  = document.getElementById('seg-frente');
+  if (!selEmp) return;
+  if (selFr) { selFr.innerHTML = '<option value="">Selecione a frente...</option>'; selFr.disabled = true; }
+  if (!obraId) { selEmp.innerHTML = '<option value="">Selecione a empresa...</option>'; selEmp.disabled = true; return; }
+  const raw = typeof STATE !== 'undefined' && Array.isArray(STATE.empresas) ? STATE.empresas : [];
+  const byId = _dedup(
+    raw.filter(e => String(e.obraId || e.obra_id || e.obra) === String(obraId) && e.ativa !== false && e.ativo !== false && e.deletedAt == null),
+    e => String(e.id)
+  );
+  const empresas = _dedup(byId, e => (e.nome || '').trim().toLowerCase())
+    .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt'));
+  selEmp.innerHTML = '<option value="">Selecione a empresa...</option>' +
+    empresas.map(e => `<option value="${esc(e.id)}">${esc(e.nome)}</option>`).join('');
+  selEmp.disabled = false;
+}
+
+function updateSegurancaFrentes() {
+  const empId = document.getElementById('seg-empresa')?.value;
+  const selFr = document.getElementById('seg-frente');
+  if (!selFr) return;
+  if (!empId) { selFr.innerHTML = '<option value="">Selecione a frente...</option>'; selFr.disabled = true; return; }
+  const raw = typeof STATE !== 'undefined' && Array.isArray(STATE.frentes) ? STATE.frentes : [];
+  const byId = _dedup(
+    raw.filter(f => String(f.empresaId || f.empresa_id || f.empresa) === String(empId) && f.ativa !== false && f.ativo !== false && f.deletedAt == null),
+    f => String(f.id)
+  );
+  const frentes = _dedup(byId, f => (f.nome || '').trim().toLowerCase())
+    .sort((a, b) => (a.nome || '').localeCompare(b.nome || '', 'pt'));
+  selFr.innerHTML = '<option value="">Selecione a frente...</option>' +
+    frentes.map(f => `<option value="${esc(f.id)}">${esc(f.nome)}</option>`).join('');
+  selFr.disabled = false;
+}
+
+// ── FOTO ──────────────────────────────────────────────────────
+function handleSegurancaPhotoSelect(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  INSPECAO_STATE.fotoOriginal = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    INSPECAO_STATE.fotoPreviewUrl = e.target.result;
+    const drop = document.getElementById('seg-photo-drop');
+    const prevWrap = document.getElementById('seg-photo-preview-wrap');
+    if (drop) drop.style.display = 'none';
+    if (prevWrap) prevWrap.classList.remove('hidden');
+    renderAnnotationCanvas();
+  };
+  reader.readAsDataURL(file);
+  extractSegurancaExif(file).then(exif => {
+    if (exif.data) { const d = document.getElementById('seg-data'); if (d && !d.value) d.value = exif.data; }
+    if (exif.hora) { const h = document.getElementById('seg-hora'); if (h && !h.value) h.value = exif.hora; }
+    const alertEl = document.getElementById('seg-exif-alert');
+    if (alertEl) {
+      alertEl.className = 'exif-alert ' + (exif.data ? 'exif-ok' : 'exif-warn');
+      alertEl.textContent = exif.data
+        ? '✓ Data/hora extraídas da foto: ' + exif.data + (exif.hora ? ' ' + exif.hora : '')
+        : 'Data/hora não encontradas. Preencha manualmente.';
+      alertEl.classList.remove('hidden');
+    }
+  });
+  event.target.value = '';
+}
+
+async function extractSegurancaExif(file) {
+  return new Promise(res => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const arr = new Uint8Array(e.target.result);
+        let offset = 2;
+        while (offset < arr.length - 4) {
+          if (arr[offset] !== 0xFF) break;
+          const marker = arr[offset + 1];
+          if (marker === 0xE1) {
+            const seg = String.fromCharCode.apply(null, arr.slice(offset + 10, Math.min(offset + 300, arr.length)));
+            const m = seg.match(/(\d{4}):(\d{2}):(\d{2}) (\d{2}):(\d{2})/);
+            if (m) { res({ data: `${m[1]}-${m[2]}-${m[3]}`, hora: `${m[4]}:${m[5]}` }); return; }
+          }
+          const len = (arr[offset + 2] << 8) | arr[offset + 3];
+          if (len < 2) break;
+          offset += 2 + len;
+        }
+      } catch(e) {}
+      res({ data: '', hora: '' });
+    };
+    reader.readAsArrayBuffer(file.slice(0, 65536));
+  });
+}
+
+// ── CANVAS DE ANOTAÇÕES ───────────────────────────────────────
+function renderAnnotationCanvas() {
+  const canvas = document.getElementById('seg-annotation-canvas');
+  if (!canvas || !INSPECAO_STATE.fotoPreviewUrl) return;
+  const img = new Image();
+  img.onload = () => {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    _drawAnnotationsOnCtx(ctx, img.width, img.height);
+  };
+  img.src = INSPECAO_STATE.fotoPreviewUrl;
+  canvas.onclick = e => {
+    const rect = canvas.getBoundingClientRect();
+    const xNorm = (e.clientX - rect.left) / rect.width;
+    const yNorm = (e.clientY - rect.top) / rect.height;
+    promptAddAnnotation(xNorm, yNorm);
+  };
+}
+
+function _drawAnnotationsOnCtx(ctx, W, H) {
+  INSPECAO_STATE.anotacoes.forEach(a => {
+    const x = a.xNorm * W, y = a.yNorm * H;
+    const isAI = !!a.bbox;
+    ctx.beginPath(); ctx.arc(x, y, 6, 0, Math.PI * 2);
+    ctx.fillStyle = isAI ? 'rgba(201,18,74,.9)' : 'rgba(245,197,24,.9)'; ctx.fill();
+    ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+    if (a.bbox) {
+      ctx.strokeStyle = 'rgba(201,18,74,.8)'; ctx.lineWidth = 2;
+      ctx.strokeRect(a.bbox.x * W, a.bbox.y * H, a.bbox.width * W, a.bbox.height * H);
+    }
+    const txt = a.texto || '';
+    ctx.font = 'bold 13px Arial, sans-serif';
+    const tw = ctx.measureText(txt).width;
+    const lx = Math.min(x + 10, W - tw - 20), ly = Math.max(y - 14, 18);
+    ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(lx + 6, ly + 2);
+    ctx.strokeStyle = isAI ? '#C8184A' : '#F5C518'; ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.fillStyle = isAI ? 'rgba(200,24,74,.9)' : 'rgba(26,29,39,.85)';
+    ctx.fillRect(lx - 4, ly - 14, tw + 10, 20);
+    ctx.fillStyle = '#fff'; ctx.fillText(txt, lx, ly + 2);
+  });
+}
+
+function promptAddAnnotation(xNorm, yNorm) {
+  if (INSPECAO_STATE.anotacoes.length >= 4) { toast('Máximo de 4 marcações.', 'warn'); return; }
+  const txt = prompt('Texto da marcação (máx 60 caracteres):');
+  if (!txt || !txt.trim()) return;
+  INSPECAO_STATE.anotacoes.push({ id: 'man-' + Date.now(), texto: txt.trim().slice(0, 60), xNorm, yNorm, manual: true });
+  renderAnnotationCanvas();
+  renderManualAnnotationsList();
+}
+
+function renderManualAnnotationsList() {
+  const list = document.getElementById('seg-annotations-list');
+  if (!list) return;
+  list.innerHTML = INSPECAO_STATE.anotacoes.filter(a => a.manual).map(a => `
+    <div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--s2);border-radius:6px;margin-bottom:6px">
+      <span style="flex:1;font-size:12px">${esc(a.texto)}</span>
+      <button onclick="removeAnnotation('${esc(a.id)}')" style="color:var(--err);font-size:18px;background:none;border:none;cursor:pointer;line-height:1">×</button>
+    </div>`).join('');
+}
+
+function removeAnnotation(id) {
+  INSPECAO_STATE.anotacoes = INSPECAO_STATE.anotacoes.filter(a => a.id !== id);
+  renderAnnotationCanvas(); renderManualAnnotationsList();
+}
+
+// ── STEPPER (3 etapas) ────────────────────────────────────────
+const SEG_TOTAL_STEPS = 3;
+
+function setSegStep(step) {
+  INSPECAO_STATE.currentStep = step;
+  for (let i = 1; i <= SEG_TOTAL_STEPS; i++) {
+    const pane = document.getElementById('seg-pane-' + i);
+    const dot  = document.getElementById('segstep-' + i);
+    if (pane) pane.classList.toggle('hidden', i !== step);
+    if (dot) { dot.classList.toggle('active', i === step); dot.classList.toggle('done', i < step); }
+  }
+  const page = document.getElementById('page-registrar');
+  if (page) page.scrollTop = 0; else window.scrollTo(0, 0);
+}
+
+function nextSegStep() {
+  const step = INSPECAO_STATE.currentStep;
+  if (step === 1 && !validateSegStep1()) return;
+  if (step < SEG_TOTAL_STEPS) setSegStep(step + 1);
+}
+
+function prevSegStep() {
+  if (INSPECAO_STATE.currentStep > 1) setSegStep(INSPECAO_STATE.currentStep - 1);
+}
+
+function validateSegStep1() {
+  const obraId    = document.getElementById('seg-obra')?.value;
+  const empresaId = document.getElementById('seg-empresa')?.value;
+  const frenteId  = document.getElementById('seg-frente')?.value;
+  const rac       = document.getElementById('seg-rac')?.value;
+  const data      = document.getElementById('seg-data')?.value;
+  if (!obraId)    { toast('Selecione a Obra.', 'err'); return false; }
+  if (!empresaId) { toast('Selecione a Empresa.', 'err'); return false; }
+  if (!frenteId)  { toast('Selecione a Frente.', 'err'); return false; }
+  if (!rac)       { toast('Selecione o RAC.', 'err'); return false; }
+  if (!data)      { toast('Informe a data.', 'err'); return false; }
+  INSPECAO_STATE.racSelecionado = rac;
+  const wrap = document.getElementById('seg-rac-badge-wrap');
+  if (wrap) { wrap.innerHTML = renderRacBadge(rac); wrap.style.display = 'block'; }
+  return true;
+}
+
+// ── ANÁLISE COM IA ────────────────────────────────────────────
+async function analisarInspecaoComIA() {
+  if (!canUseInspectionAI()) { toast('Sem permissao para IA de Inspecao.', 'err'); return; }
+  if (!INSPECAO_STATE.fotoPreviewUrl) { toast('Adicione uma foto primeiro.', 'err'); return; }
+  if (INSPECAO_STATE.analisando) return;
+  INSPECAO_STATE.analisando = true;
+  const iaBtn = document.getElementById('btn-analisar-ia');
+  if (iaBtn) iaBtn.disabled = true;
+  document.getElementById('seg-ia-loading')?.classList.remove('hidden');
+  document.getElementById('seg-ia-resultado')?.classList.add('hidden');
+  try {
+    let imageData = INSPECAO_STATE.fotoPreviewUrl;
+    if (typeof compressImage === 'function' && INSPECAO_STATE.fotoOriginal) {
+      try {
+        const blob = await compressImage(INSPECAO_STATE.fotoOriginal, 1024, 0.82);
+        imageData = await new Promise(r => { const fr = new FileReader(); fr.onload = e => r(e.target.result); fr.readAsDataURL(blob); });
+      } catch(e) { /* usa original */ }
+    }
+    const base64 = imageData.split(',')[1] || imageData;
+    const racs = (await loadRacCatalog()).map(r => ({ codigo: r.codigo, nome: r.nome }));
+    const resp = await fetch('/.netlify/functions/inspecao-seguranca', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'analisar_inspecao_seguranca',
+        usuario_login: typeof getCurrentUserLogin === 'function' ? getCurrentUserLogin() : '',
+        image: base64,
+        descricao: (document.getElementById('seg-desc-original')?.value || '').slice(0, 300),
+        racs,
+        contexto: {
+          obraId: document.getElementById('seg-obra')?.value,
+          empresaId: document.getElementById('seg-empresa')?.value,
+          frenteId: document.getElementById('seg-frente')?.value
+        }
+      })
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(data.error || data.message || ('HTTP ' + resp.status));
+    _validarRespostaIAInspecao(data);
+    _aplicarRespostaIA(data);
+    INSPECAO_STATE.usandoIA = true;
+  } catch(e) {
+    console.error('[IA INSPECAO]', e);
+    toast(e.message || 'Falha na analise IA. Continue manualmente.', 'err', 5000);
+  } finally {
+    INSPECAO_STATE.analisando = false;
+    document.getElementById('seg-ia-loading')?.classList.add('hidden');
+    const iaBtn2 = document.getElementById('btn-analisar-ia');
+    if (iaBtn2) iaBtn2.disabled = false;
+  }
+}
+
+function _sanitizeInspectionText(value, max) {
+  return String(value || '').replace(/<[^>]*>/g, '').replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+}
+function _clamp01(value, fallback = 0) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(0, Math.min(1, n));
+}
+function _validarRespostaIAInspecao(data) {
+  if (!data || typeof data !== 'object') data = {};
+  if (!validateSuggestedRac(data.rac_sugerido)) { data.rac_sugerido = 'N/A'; data.requer_revisao_manual = true; }
+  data.titulo_sugerido = _sanitizeInspectionText(data.titulo_sugerido, 120);
+  data.descricao_sugerida = _sanitizeInspectionText(data.descricao_sugerida, 300);
+  data.justificativa_rac = _sanitizeInspectionText(data.justificativa_rac, 300);
+  data.confianca = _clamp01(data.confianca ?? data.confidence, 0);
+  if (data.confianca < 0.55) data.requer_revisao_manual = true;
+  if (!Array.isArray(data.evidencias)) data.evidencias = [];
+  data.evidencias = data.evidencias.slice(0, 4).map((ev, i) => {
+    const texto = _sanitizeInspectionText(ev.texto || ev.titulo || ev.descricao, 120);
+    const rac = validateSuggestedRac(ev.rac || ev.rac_sugerido) ? (ev.rac || ev.rac_sugerido) : 'N/A';
+    const bbox = ev.bbox && typeof ev.bbox === 'object' ? ev.bbox : null;
+    if (bbox) {
+      const x = _clamp01(bbox.x, 0);
+      const y = _clamp01(bbox.y, 0);
+      const width = _clamp01(bbox.width ?? bbox.w, 0.1);
+      const height = _clamp01(bbox.height ?? bbox.h, 0.1);
+      ev.bbox = { x, y, width: Math.max(0.01, Math.min(1 - x, width)), height: Math.max(0.01, Math.min(1 - y, height)) };
+    } else {
+      ev.bbox = null;
+    }
+    ev.texto = texto || ('Evidencia ' + (i + 1));
+    ev.rac = rac;
+    ev.confianca = _clamp01(ev.confianca ?? ev.confidence, 0);
+    if (ev.confianca < 0.55) data.requer_revisao_manual = true;
+    ev.id = _sanitizeInspectionText(ev.id, 40) || ('ev-' + (i + 1));
+    ev.fonte = _sanitizeInspectionText(ev.fonte || 'imagem', 40);
+    ev.selecionada = true;
+    return ev;
+  });
+}
+
+function _aplicarRespostaIA(data) {
+  INSPECAO_STATE.racSugerido = data.rac_sugerido;
+  INSPECAO_STATE.evidencias  = data.evidencias;
+  const racSel = document.getElementById('seg-rac');
+  if (racSel && data.rac_sugerido) racSel.value = data.rac_sugerido;
+  INSPECAO_STATE.racSelecionado = data.rac_sugerido;
+  if (data.titulo_sugerido) { const t = document.getElementById('seg-titulo'); if (t && !t.value) t.value = data.titulo_sugerido; }
+  const racWrap = document.getElementById('seg-rac-sugerido-wrap');
+  if (racWrap) racWrap.innerHTML = renderRacBadge(data.rac_sugerido) +
+    (data.justificativa_rac ? `<p class="tsm txm mt2">${esc(data.justificativa_rac)}</p>` : '');
+  if (data.requer_revisao_manual) document.getElementById('seg-rev-manual-warn')?.classList.remove('hidden');
+  const aiAnots = data.evidencias.filter(ev => ev.bbox).map(ev => ({
+    id: ev.id, texto: ev.texto,
+    xNorm: ev.bbox.x + ev.bbox.width / 2,
+    yNorm: ev.bbox.y + ev.bbox.height / 2,
+    bbox: ev.bbox, manual: false, confianca: ev.confianca
+  }));
+  INSPECAO_STATE.anotacoes = [...INSPECAO_STATE.anotacoes.filter(a => a.manual), ...aiAnots];
+  renderAnnotationCanvas();
+  renderEvidenciasInspecao();
+  document.getElementById('seg-ia-resultado')?.classList.remove('hidden');
+}
+
+// ── EVIDÊNCIAS ────────────────────────────────────────────────
+function renderEvidenciasInspecao() {
+  const list = document.getElementById('seg-evidencias-list');
+  if (!list) return;
+  list.innerHTML = INSPECAO_STATE.evidencias.map(ev => `
+    <div class="seg-ev-item ${ev.selecionada ? 'selected' : ''}" id="evitem-${esc(ev.id)}">
+      <input type="checkbox" class="seg-ev-cb" ${ev.selecionada ? 'checked' : ''} onchange="toggleEvidenciaInspecao('${esc(ev.id)}')">
+      <div style="flex:1">
+        <div class="seg-ev-text" contenteditable="true" oninput="updateEvidenciaText('${esc(ev.id)}', this.textContent)">${esc(ev.texto)}</div>
+        <div class="seg-ev-fonte">Fonte: ${esc(ev.fonte || 'imagem')} · <span class="seg-ev-conf">${Math.round((ev.confianca || 0) * 100)}%</span></div>
+      </div>
+      <button onclick="removeEvidencia('${esc(ev.id)}')" style="color:var(--err);font-size:18px;background:none;border:none;cursor:pointer;line-height:1;flex-shrink:0">×</button>
+    </div>`).join('');
+}
+
+function toggleEvidenciaInspecao(id) {
+  const ev = INSPECAO_STATE.evidencias.find(e => e.id === id);
+  if (ev) { ev.selecionada = !ev.selecionada; const item = document.getElementById('evitem-' + id); if (item) item.classList.toggle('selected', ev.selecionada); }
+}
+function selecionarTodasEvidencias() { INSPECAO_STATE.evidencias.forEach(e => e.selecionada = true); renderEvidenciasInspecao(); }
+function limparSelecaoEvidencias() { INSPECAO_STATE.evidencias.forEach(e => e.selecionada = false); renderEvidenciasInspecao(); }
+function updateEvidenciaText(id, txt) { const ev = INSPECAO_STATE.evidencias.find(e => e.id === id); if (ev) ev.texto = (txt || '').trim().slice(0, 120); }
+function removeEvidencia(id) {
+  INSPECAO_STATE.evidencias = INSPECAO_STATE.evidencias.filter(e => e.id !== id);
+  INSPECAO_STATE.anotacoes  = INSPECAO_STATE.anotacoes.filter(a => a.id !== id);
+  renderEvidenciasInspecao(); renderAnnotationCanvas();
+}
+function adicionarEvidenciaManual() {
+  if (INSPECAO_STATE.evidencias.length >= 4) { toast('Máximo de 4 evidências.', 'warn'); return; }
+  INSPECAO_STATE.evidencias.push({ id: 'man-ev-' + Date.now(), texto: 'Nova evidência', fonte: 'manual', confianca: 1, selecionada: true });
+  renderEvidenciasInspecao();
+}
+
+// ── GERAR DESCRIÇÃO ───────────────────────────────────────────
+async function gerarDescricaoInspecaoComIA() {
+  if (!canUseInspectionAI()) { toast('Sem permissao IA.', 'err'); return; }
+  const selecionadas = INSPECAO_STATE.evidencias.filter(e => e.selecionada).map(e => e.texto);
+  if (!selecionadas.length) { toast('Selecione ao menos uma evidencia.', 'warn'); return; }
+  const btn = document.getElementById('btn-gerar-desc');
+  if (btn) { btn.disabled = true; btn.textContent = 'Gerando...'; }
+  try {
+    const resp = await fetch('/.netlify/functions/inspecao-seguranca', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'gerar_descricao_inspecao',
+        usuario_login: typeof getCurrentUserLogin === 'function' ? getCurrentUserLogin() : '',
+        descricao_original: (document.getElementById('seg-desc-original')?.value || '').slice(0, 300),
+        rac: INSPECAO_STATE.racSelecionado,
+        evidencias_selecionadas: selecionadas
+      })
+    });
+    const data = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(data.error || data.message || ('HTTP ' + resp.status));
+    const desc = _sanitizeInspectionText(data.descricao_final || data.descricao || '', 300);
+    if (!desc) throw new Error('A IA nao retornou uma descricao valida.');
+    const tf = document.getElementById('seg-titulo-final');
+    const df = document.getElementById('seg-desc-final');
+    if (tf && !tf.value) tf.value = document.getElementById('seg-titulo')?.value || '';
+    if (df) { df.value = desc; const cnt = document.getElementById('seg-desc-final-count'); if (cnt) cnt.textContent = desc.length; }
+    toast('Descricao gerada! Role para baixo para revisar.', 'ok', 3000);
+    document.getElementById('seg-titulo-final')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  } catch(e) {
+    toast(e.message || 'Falha ao gerar descricao. Preencha manualmente.', 'err', 5000);
+    const tf = document.getElementById('seg-titulo-final');
+    if (tf && !tf.value) tf.value = document.getElementById('seg-titulo')?.value || '';
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Gerar descricao'; }
+  }
+}
+
+function selectSegTema(tema) {
+  INSPECAO_STATE.tema = tema;
+  document.getElementById('tema-opt-vermelho')?.classList.toggle('active', tema === 'vermelho');
+  document.getElementById('tema-opt-verde')?.classList.toggle('active', tema === 'verde');
+}
+
+// ── CANVAS 16:9 — layout "Queda de Viga" ─────────────────────
+async function generateInspectionCardCanvas() {
+  const canvasEl = document.getElementById('seg-final-canvas');
+  if (!canvasEl) return null;
+  const W = 1280, H = 720;
+  canvasEl.width = W; canvasEl.height = H;
+  const ctx = canvasEl.getContext('2d');
+
+  const isVerde = INSPECAO_STATE.tema === 'verde';
+  // cores do tema
+  const TC   = isVerde ? '#1B7A4E' : '#C8184A';   // cor principal
+  const TCD  = isVerde ? '#145C3A' : '#9A0E35';   // escura
+  const TCLG = isVerde ? 'rgba(27,122,78,.12)' : 'rgba(200,24,74,.10)'; // fundo claro
+
+  // ── PAINEL ESQUERDO ──────────────────────────────────────────
+  const LW = 456;  // largura do painel esquerdo
+  ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0, 0, LW, H);
+
+  // Barra colorida no topo do painel esquerdo
+  const TOPBAR_H = 80;
+  const topGrad = ctx.createLinearGradient(0, 0, LW, 0);
+  topGrad.addColorStop(0, TC); topGrad.addColorStop(1, TCD);
+  ctx.fillStyle = topGrad; ctx.fillRect(0, 0, LW, TOPBAR_H);
+
+  // Badge RAC — canto superior direito do painel esquerdo
+  const racObj = getRacByCodigo(INSPECAO_STATE.racSelecionado) || { codigo: INSPECAO_STATE.racSelecionado || 'N/A', nome: '' };
+  const BADGE_W = 80, BADGE_H = 32, BADGE_X = LW - BADGE_W - 14, BADGE_Y = 14;
+  ctx.fillStyle = '#FFC107';
+  ctx.beginPath(); ctx.roundRect(BADGE_X, BADGE_Y, BADGE_W, BADGE_H, 6); ctx.fill();
+  ctx.fillStyle = '#222'; ctx.font = 'bold 14px Arial, sans-serif'; ctx.textAlign = 'center';
+  ctx.fillText(racObj.codigo, BADGE_X + BADGE_W / 2, BADGE_Y + 21); ctx.textAlign = 'left';
+
+  // Título — grande, abaixo da barra
+  const titulo = (document.getElementById('seg-titulo-final')?.value || document.getElementById('seg-titulo')?.value || 'Inspeção de Segurança').trim();
+  const PL = 24, PR = LW - 20;
+  ctx.fillStyle = '#111'; ctx.font = 'bold 32px Arial, sans-serif';
+  let yT = TOPBAR_H + 42;
+  _wrapCtx2(ctx, titulo, PR - PL, 2).forEach(line => { ctx.fillText(line, PL, yT); yT += 38; });
+
+  // Data com ícone
+  const data = document.getElementById('seg-data')?.value || '';
+  const hora = document.getElementById('seg-hora')?.value || '';
+  if (data) {
+    const dataFmt = data.split('-').reverse().join('/');
+    yT += 6;
+    // ícone calendário (retângulo simples)
+    ctx.fillStyle = TC; ctx.fillRect(PL, yT - 13, 16, 16);
+    ctx.fillStyle = '#FFF'; ctx.font = 'bold 9px Arial'; ctx.textAlign = 'center';
+    ctx.fillText('📅', PL + 8, yT); ctx.textAlign = 'left';
+    ctx.fillStyle = '#444'; ctx.font = '15px Arial, sans-serif';
+    ctx.fillText('   ' + dataFmt + (hora ? '  · ' + hora : ''), PL, yT);
+    yT += 26;
+  }
+
+  // Local (frente como "Pátio 3" na referência)
+  const frEl = document.getElementById('seg-frente');
+  const frenteNm = frEl?.options[frEl.selectedIndex]?.text || '';
+  const obraEl = document.getElementById('seg-obra');
+  const obraNm = obraEl?.options[obraEl.selectedIndex]?.text || '';
+  const localStr = frenteNm || obraNm;
+  if (localStr) {
+    ctx.fillStyle = TC; ctx.font = 'bold 14px Arial'; ctx.fillText('📍', PL, yT);
+    ctx.fillStyle = '#444'; ctx.font = '14px Arial, sans-serif';
+    ctx.fillText('    ' + _truncCtx(ctx, localStr, PR - PL - 20), PL, yT);
+    yT += 24;
+  }
+
+  // Linha separadora
+  yT += 8;
+  ctx.strokeStyle = '#E0E0E0'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(PL, yT); ctx.lineTo(PR, yT); ctx.stroke();
+  yT += 16;
+
+  // Label "Descrição:"
+  ctx.fillStyle = TC; ctx.font = 'bold 14px Arial, sans-serif';
+  ctx.fillText('Descrição:', PL, yT); yT += 20;
+
+  // Texto descrição
+  const desc = (document.getElementById('seg-desc-final')?.value || '').trim();
+  ctx.fillStyle = '#333'; ctx.font = '13px Arial, sans-serif';
+  if (desc) {
+    _wrapCtx2(ctx, desc, PR - PL, 9).forEach(line => {
+      if (yT < H - 52) { ctx.fillText(line, PL, yT); yT += 18; }
+    });
+  }
+
+  // Rodapé esquerdo — faixa InstaRDO
+  ctx.fillStyle = TCLG; ctx.fillRect(0, H - 42, LW, 42);
+  ctx.fillStyle = TC; ctx.font = 'bold 15px Arial, sans-serif';
+  ctx.fillText('INSTA', PL, H - 14);
+  ctx.fillStyle = '#111';
+  ctx.fillText('RDO', PL + ctx.measureText('INSTA').width + 3, H - 14);
+  ctx.fillStyle = '#777'; ctx.font = '11px Arial, sans-serif';
+  ctx.fillText('· Registro de Segurança', PL + ctx.measureText('INSTARDO').width + 8, H - 14);
+
+  // ── PAINEL DIREITO: FOTO ─────────────────────────────────────
+  const RX = LW + 4, RW = W - RX;
+  ctx.fillStyle = '#1A1A1A'; ctx.fillRect(RX, 0, RW, H);
+
+  if (INSPECAO_STATE.fotoPreviewUrl) {
+    await new Promise(res => {
+      const img = new Image();
+      img.onload = () => {
+        // cover crop
+        const r = Math.max(RW / img.width, H / img.height);
+        const sw = RW / r, sh = H / r;
+        const sx = (img.width - sw) / 2, sy = (img.height - sh) / 2;
+        ctx.drawImage(img, sx, sy, sw, sh, RX, 0, RW, H);
+
+        // Anotações estilo callout (linha + caixa arredondada)
+        INSPECAO_STATE.anotacoes.forEach(a => {
+          const ax = RX + a.xNorm * RW, ay = a.yNorm * H;
+          const calloutTxt = a.texto || '';
+          if (!calloutTxt) return;
+
+          ctx.font = 'bold 13px Arial, sans-serif';
+          const tw = ctx.measureText(calloutTxt).width;
+          const PAD = 10, CH = 28;
+          // Posicionar caixa
+          let bx = ax + 16, by = ay - CH / 2;
+          if (bx + tw + PAD * 2 > W - 10) bx = ax - tw - PAD * 2 - 16;
+          if (by < 8) by = 8;
+          if (by + CH > H - 8) by = H - CH - 8;
+
+          // Linha de conexão
+          ctx.beginPath(); ctx.moveTo(ax, ay);
+          ctx.lineTo(bx + (bx > ax ? 0 : tw + PAD * 2), by + CH / 2);
+          ctx.strokeStyle = TC; ctx.lineWidth = 2; ctx.stroke();
+
+          // Ponto central
+          ctx.beginPath(); ctx.arc(ax, ay, 6, 0, Math.PI * 2);
+          ctx.fillStyle = TC; ctx.fill();
+          ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.stroke();
+
+          // Caixa callout
+          ctx.fillStyle = TC;
+          ctx.beginPath(); ctx.roundRect(bx - PAD, by, tw + PAD * 2, CH, 5); ctx.fill();
+          ctx.fillStyle = '#fff'; ctx.font = 'bold 13px Arial, sans-serif';
+          ctx.fillText(calloutTxt, bx, by + 19);
+        });
+        res();
+      };
+      img.onerror = res;
+      img.src = INSPECAO_STATE.fotoPreviewUrl;
+    });
+  }
+
+  // Logo Vale sobreposta no canto inferior direito da foto
+  if (INSPECAO_STATE.usarLogoVale && INSPECAO_STATE.valeLogoUrl) {
+    await new Promise(res => {
+      const logo = new Image(); logo.crossOrigin = 'anonymous';
+      logo.onload = () => {
+        // fundo branco semi-transparente para o logo
+        const LGW = 90, LGH = 36;
+        ctx.fillStyle = 'rgba(255,255,255,.92)';
+        ctx.beginPath(); ctx.roundRect(W - LGW - 12, H - LGH - 12, LGW, LGH, 6); ctx.fill();
+        ctx.drawImage(logo, W - LGW - 8, H - LGH - 8, LGW - 8, LGH - 8);
+        res();
+      };
+      logo.onerror = res; logo.src = INSPECAO_STATE.valeLogoUrl;
+    });
+  }
+
+  return canvasEl;
+}
+
+function _wrapCtx2(ctx, txt, maxW, maxLines) {
+  if (!txt) return [];
+  const words = txt.split(' '); const lines = []; let cur = '';
+  for (const w of words) {
+    const test = cur ? cur + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && cur) {
+      lines.push(cur);
+      if (lines.length >= maxLines) { lines[lines.length - 1] += '…'; return lines; }
+      cur = w;
+    } else cur = test;
+  }
+  if (cur && lines.length < maxLines) lines.push(cur);
+  return lines;
+}
+
+function _truncCtx(ctx, txt, maxW) {
+  if (!txt) return '';
+  if (ctx.measureText(txt).width <= maxW) return txt;
+  while (txt.length && ctx.measureText(txt + '…').width > maxW) txt = txt.slice(0, -1);
+  return txt + '…';
+}
+
+// ── PREVIEW ───────────────────────────────────────────────────
+async function previewInspectionCard() {
+  if (!validateSegRevisao()) return;
+  INSPECAO_STATE.usarLogoVale = document.getElementById('seg-logo-vale')?.checked || false;
+  toast('Gerando card...', 'info', 1500);
+  await generateInspectionCardCanvas();
+  setSegStep(3);
+}
+
+function validateSegRevisao() {
+  const t = document.getElementById('seg-titulo-final')?.value || document.getElementById('seg-titulo')?.value || '';
+  if (!t.trim()) { toast('Informe o título final.', 'err'); return false; }
+  return true;
+}
+
+// ── UPLOAD ────────────────────────────────────────────────────
+async function _uploadInspectionAsset(blob, path) {
+  const bucket = typeof SUPABASE_BUCKET !== 'undefined' ? SUPABASE_BUCKET : 'fotos-rdo';
+  const resp = await fetch(sbUrl(`/storage/v1/object/${bucket}/${path}`), {
+    method: 'POST',
+    headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}`, 'Content-Type': blob.type || 'image/jpeg', 'x-upsert': 'true' },
+    body: blob
+  });
+  if (!resp.ok) throw new Error('Upload falhou: ' + resp.status);
+  return sbUrl(`/storage/v1/object/public/${bucket}/${path}`);
+}
+
+// ── SALVAR ────────────────────────────────────────────────────
+// PATCH SEGURANÇA - publicação compatível com feed oficial (tabela: relatorios)
+async function publicarInspecaoNoFeed(inspecao, cardBlob, cardFinalUrl, cardStoragePath) {
+  if (!inspecao || !inspecao.id) throw new Error('Inspecao invalida para publicacao.');
+  if (!cardFinalUrl) throw new Error('URL do card final nao disponivel.');
+  const login = normalizeLogin(inspecao.usuario_login || (typeof getCurrentUserLogin === 'function' ? getCurrentUserLogin() : '') || sessionStorage.getItem('rdo_user') || '');
+  if (!login) throw new Error('Usuario nao identificado para publicacao no feed.');
+
+  const inspecaoId = String(inspecao.id);
+  const feedId = 'seg_feed_' + inspecaoId;
+  const fotoId = 'seg_card_' + inspecaoId;
+  const dataRegistro = inspecao.data_inspecao || new Date().toISOString().slice(0, 10);
+  const horaRegistro = inspecao.hora_inspecao || null;
+  const titulo = inspecao.titulo || 'Inspecao de seguranca';
+  const descricao = inspecao.descricao_final || inspecao.descricao_original || titulo;
+  const path = cardStoragePath || ('seguranca/' + inspecaoId + '/card.jpg');
+
+  const regPayload = {
+    id: feedId,
+    usuario_login: login,
+    tipo_postagem: 'inspecao_seguranca',
+    inspecao_id: inspecaoId,
+    descricao_original: titulo,
+    descricao_final: descricao,
+    observacao: '',
+    data_registro: dataRegistro,
+    hora_registro: horaRegistro,
+    obra_id: inspecao.obra_id || null,
+    empresa_id: inspecao.empresa_id || null,
+    frente_id: inspecao.frente_id || null,
+    foto_ids: [fotoId],
+    foto_count: 1,
+    ativo: true
+  };
+
+  await sbRequest('/rest/v1/relatorios?on_conflict=id', {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
+    body: JSON.stringify(regPayload)
+  });
+
+  const fotoPayload = {
+    id: fotoId,
+    registro_id: feedId,
+    storage_path: path,
+    url_publica: cardFinalUrl,
+    ordem: 1,
+    data_foto: dataRegistro,
+    hora_foto: horaRegistro,
+    tamanho: cardBlob ? (cardBlob.size || 0) : 0,
+    tipo: 'image/jpeg',
+    ativo: true
+  };
+  await sbRequest('/rest/v1/rdo_fotos?on_conflict=id', {
+    method: 'POST',
+    headers: { Prefer: 'resolution=merge-duplicates,return=representation' },
+    body: JSON.stringify(fotoPayload)
+  });
+
+  const regLocal = {
+    id: feedId,
+    obraId: inspecao.obra_id || '', empresaId: inspecao.empresa_id || '', frenteId: inspecao.frente_id || '',
+    frenteCustom: '', clima: '', turno: '',
+    desc: titulo,
+    descFinal: descricao,
+    obs: '',
+    dataRegistro,
+    horaRegistro: horaRegistro || '',
+    fotoIds: [fotoId],
+    ativa: true, ativo: true,
+    createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(),
+    createdBy: login,
+    tipoPostagem: 'inspecao_seguranca', tipo_postagem: 'inspecao_seguranca',
+    inspecaoId, inspecao_id: inspecaoId
+  };
+  const relatorios = STATE.relatorios || [];
+  const idx = relatorios.findIndex(r => String(r.id) === feedId);
+  if (idx >= 0) relatorios[idx] = regLocal; else relatorios.unshift(regLocal);
+  STATE.relatorios = relatorios;
+
+  const fotoLocal = {
+    id: fotoId,
+    registroId: feedId, relatorioId: feedId, registro_id: feedId, relatorio_id: feedId,
+    storagePath: path, storage_path: path,
+    urlPublica: cardFinalUrl, url_publica: cardFinalUrl, url: cardFinalUrl,
+    dataUrl: cardFinalUrl, dataURL: cardFinalUrl,
+    ordem: 1, tipo: 'image/jpeg', ativo: true, ativa: true
+  };
+  STATE.fotos = mergeById(STATE.fotos || [], [fotoLocal]);
+  if (typeof loadFeed === 'function') setTimeout(loadFeed, 300);
+  return regLocal;
+}
+
+async function salvarInspecaoSeguranca() {
+  const btn = document.getElementById('btn-salvar-inspecao');
+  const statusEl = document.getElementById('seg-salvar-status');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
+  if (statusEl) { statusEl.className = 'exif-alert exif-ok'; statusEl.textContent = 'Enviando arquivos...'; statusEl.classList.remove('hidden'); }
+
+  const inspecaoId = 'insp-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7);
+  let fotoOriginalUrl = '', cardFinalUrl = '', cardBlob = null, cardStoragePath = '';
+  let inspecaoSalva = false;
+  let feedPublicado = false;
+
+  try {
+    if (INSPECAO_STATE.fotoOriginal) {
+      fotoOriginalUrl = await _uploadInspectionAsset(INSPECAO_STATE.fotoOriginal, 'seguranca/' + inspecaoId + '/original.jpg');
+    }
+    const canvasEl = document.getElementById('seg-final-canvas');
+    if (canvasEl) {
+      cardBlob = await new Promise(r => canvasEl.toBlob(r, 'image/jpeg', 0.92));
+      if (cardBlob) {
+        cardStoragePath = 'seguranca/' + inspecaoId + '/card.jpg';
+        cardFinalUrl = await _uploadInspectionAsset(cardBlob, cardStoragePath);
+      }
+    }
+
+    const obraEl = document.getElementById('seg-obra');
+    const empEl  = document.getElementById('seg-empresa');
+    const frEl   = document.getElementById('seg-frente');
+    const racObj = getRacByCodigo(INSPECAO_STATE.racSelecionado);
+    const login  = typeof getCurrentUserLogin === 'function' ? getCurrentUserLogin() : (typeof currentLogin !== 'undefined' ? currentLogin : '');
+    const inspecao = {
+      id: inspecaoId,
+      obra_id: obraEl?.value || null,
+      empresa_id: empEl?.value || null,
+      frente_id: frEl?.value || null,
+      usuario_login: login,
+      rac_codigo: INSPECAO_STATE.racSelecionado,
+      rac_nome_snapshot: racObj?.nome || '',
+      titulo: document.getElementById('seg-titulo-final')?.value || document.getElementById('seg-titulo')?.value || '',
+      descricao_original: document.getElementById('seg-desc-original')?.value || '',
+      descricao_final: document.getElementById('seg-desc-final')?.value || '',
+      data_inspecao: document.getElementById('seg-data')?.value || null,
+      hora_inspecao: document.getElementById('seg-hora')?.value || null,
+      foto_original_url: fotoOriginalUrl,
+      card_final_url: cardFinalUrl,
+      anotacoes: INSPECAO_STATE.anotacoes || [],
+      tema: INSPECAO_STATE.tema,
+      usar_logo_vale: INSPECAO_STATE.usarLogoVale,
+      usou_ia: INSPECAO_STATE.usandoIA,
+      ativo: true
+    };
+
+    await sbRequest('/rest/v1/rdo_inspecoes_seguranca', {
+      method: 'POST', headers: { Prefer: 'return=minimal' },
+      body: JSON.stringify(inspecao)
+    });
+    inspecaoSalva = true;
+
+    const evidSel = INSPECAO_STATE.evidencias.filter(e => e.selecionada).map((e, i) => ({
+      inspecao_id: inspecaoId,
+      texto: e.texto,
+      fonte: e.fonte,
+      confianca: e.confianca,
+      bbox: e.bbox || null,
+      selecionada: true,
+      ordem: i,
+      ativo: true
+    }));
+    if (evidSel.length) {
+      await sbRequest('/rest/v1/rdo_inspecao_evidencias', {
+        method: 'POST', headers: { Prefer: 'return=minimal' }, body: JSON.stringify(evidSel)
+      }).catch(e => console.warn('[EVIDENCIAS]', e));
+    }
+
+    if (cardFinalUrl) {
+      await publicarInspecaoNoFeed(inspecao, cardBlob, cardFinalUrl, cardStoragePath);
+      feedPublicado = true;
+    }
+
+    if (statusEl) statusEl.textContent = feedPublicado ? 'Inspecao salva e publicada!' : 'Inspecao salva sem publicacao no feed.';
+    toast(feedPublicado ? 'Inspecao salva e publicada!' : 'Inspecao salva, mas sem card no feed.', feedPublicado ? 'ok' : 'warn', 5000);
+    setTimeout(_resetInspecaoForm, 2000);
+  } catch(error) {
+    console.error('[SALVAR INSPECAO]', error);
+    if (statusEl) { statusEl.className = inspecaoSalva ? 'exif-alert exif-warn' : 'exif-alert exif-err'; statusEl.textContent = getErrMsg(error); }
+    toast(inspecaoSalva ? 'Inspecao salva, mas houve erro na publicacao do feed: ' + getErrMsg(error) : 'Nao foi possivel salvar a inspecao: ' + getErrMsg(error), inspecaoSalva ? 'warn' : 'err', 7000);
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Salvar e publicar'; }
+  }
+}
+
+function _resetInspecaoForm() {
+  Object.assign(INSPECAO_STATE, {
+    currentStep: 1, fotoOriginal: null, fotoPreviewUrl: '',
+    anotacoes: [], evidencias: [], racSugerido: 'N/A', racSelecionado: 'N/A',
+    usandoIA: false, analisando: false
+  });
+  ['seg-obra','seg-empresa','seg-frente','seg-rac','seg-data','seg-hora',
+   'seg-titulo','seg-desc-original','seg-titulo-final','seg-desc-final'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  document.getElementById('seg-photo-drop')?.style.removeProperty('display');
+  document.getElementById('seg-photo-preview-wrap')?.classList.add('hidden');
+  document.getElementById('seg-ia-resultado')?.classList.add('hidden');
+  document.getElementById('seg-salvar-status')?.classList.add('hidden');
+  document.getElementById('seg-exif-alert')?.classList.add('hidden');
+  const btn = document.getElementById('btn-salvar-inspecao');
+  if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Salvar e publicar'; }
+  setSegStep(1);
+}
+
+// ── LOGO VALE ─────────────────────────────────────────────────
+async function loadValeLogoConfig() {
+  try {
+    const rows = await sbRequest('/rest/v1/rdo_configuracoes_visuais?chave=eq.vale_logo_url&ativo=eq.true', { method: 'GET' });
+    if (Array.isArray(rows) && rows[0]?.arquivo_url) {
+      INSPECAO_STATE.valeLogoUrl = rows[0].arquivo_url;
+      document.getElementById('seg-logo-vale-wrap')?.classList.remove('hidden');
+    }
+  } catch(e) { /* sem logo */ }
+}
+
+async function initRegistroSeguranca() {
+  if (INSPECAO_STATE._initialized) return;
+  INSPECAO_STATE._initialized = true;
+  await loadRacCatalog();
+  renderRacOptions('seg-rac');
+  loadSegurancaObras();
+  await loadValeLogoConfig();
+  document.getElementById('seg-desc-original')?.addEventListener('input', function() {
+    const cnt = document.getElementById('seg-desc-count'); if (cnt) cnt.textContent = this.value.length;
+  });
+  document.getElementById('seg-desc-final')?.addEventListener('input', function() {
+    const cnt = document.getElementById('seg-desc-final-count'); if (cnt) cnt.textContent = this.value.length;
+  });
+  const dataEl = document.getElementById('seg-data');
+  if (dataEl && !dataEl.value) dataEl.value = new Date().toISOString().slice(0, 10);
+  // Ocultar botão IA se sem permissão
+  const iaBtn = document.getElementById('btn-analisar-ia');
+  if (iaBtn) {
+    iaBtn.style.display = canUseInspectionAI() ? 'flex' : 'none';
+    iaBtn.title = 'Analisar foto com IA';
+  }
+}
+
+function getFeedPhotoClass(reg) {
+  return (reg && (reg.tipo_postagem || reg.tipoPostagem) === 'inspecao_seguranca') ? 'feed-photo-inspecao' : 'feed-photo';
+}
+// /PATCH SEGURANÇA - JS
 </script>
 
 
