@@ -8,7 +8,7 @@ const CORS_HEADERS = {
 
 const RAC_DEFAULT = [
   'RAC 01','RAC 02','RAC 03','RAC 04','RAC 05','RAC 06','RAC 07',
-  'RAC 08','RAC 09','RAC 10','RAC 11','RAC 12','RAC 13','N/A'
+  'RAC 08','RAC 09','RAC 10','RAC 11','RAC 12','RAC 13','PNR','N/A'
 ];
 
 function json(statusCode, body) {
@@ -36,6 +36,7 @@ function normalizeLogin(value) {
 
 function normalizeRac(value) {
   const raw = String(value || '').trim().toUpperCase();
+  if (raw === 'PNR' || raw === 'P.N.R') return 'PNR';
   if (raw === 'N/A') return 'N/A';
   const m = raw.match(/^(?:RAC\s*)?(0?[1-9]|1[0-3])$/);
   return m ? 'RAC ' + String(Number(m[1])).padStart(2, '0') : raw;
@@ -45,7 +46,8 @@ function allowedRacs(input) {
   const fromClient = Array.isArray(input)
     ? input.map(r => normalizeRac(typeof r === 'string' ? r : (r.codigo || r.id))).filter(Boolean)
     : [];
-  const set = new Set([...RAC_DEFAULT, ...fromClient].filter(r => r === 'N/A' || /^RAC (0[1-9]|1[0-3])$/.test(r)));
+  const set = new Set([...RAC_DEFAULT, ...fromClient].filter(r => r === 'PNR' || r === 'N/A' || /^RAC (0[1-9]|1[0-3])$/.test(r)));
+  set.add('PNR');
   set.add('N/A');
   return set;
 }
@@ -136,10 +138,10 @@ async function callOpenAI({ model, input, instructions }) {
 }
 
 function validateAnalysis(raw, racSet) {
-  const rac = racSet.has(normalizeRac(raw.rac_sugerido)) ? normalizeRac(raw.rac_sugerido) : 'N/A';
+  const rac = racSet.has(normalizeRac(raw.rac_sugerido)) ? normalizeRac(raw.rac_sugerido) : 'PNR';
   const conf = clamp01(raw.confianca ?? raw.confidence, 0);
-  const evidencias = Array.isArray(raw.evidencias) ? raw.evidencias.slice(0, 4).map((ev, i) => {
-    const evRac = racSet.has(normalizeRac(ev.rac || ev.rac_sugerido)) ? normalizeRac(ev.rac || ev.rac_sugerido) : 'N/A';
+  const evidencias = Array.isArray(raw.evidencias) ? raw.evidencias.filter(Boolean).map((ev, i) => {
+    const evRac = racSet.has(normalizeRac(ev.rac || ev.rac_sugerido)) ? normalizeRac(ev.rac || ev.rac_sugerido) : 'PNR';
     const bbox = ev.bbox && typeof ev.bbox === 'object' ? ev.bbox : null;
     const x = bbox ? clamp01(bbox.x, 0) : 0;
     const y = bbox ? clamp01(bbox.y, 0) : 0;
@@ -172,9 +174,9 @@ async function analisar(payload) {
   if (!image) throw Object.assign(new Error('Imagem obrigatoria.'), { statusCode: 400 });
   const dataUrl = image.startsWith('data:') ? image : `data:image/jpeg;base64,${image}`;
   const catalog = [...racSet].join(', ');
-  const instructions = `Voce e um especialista de seguranca do trabalho em obras civis. Analise a foto e a descricao base. Responda somente JSON valido. Identifique riscos ou boas praticas, sugira RAC apenas dentro deste catalogo: ${catalog}. Nunca use RAC 14. Se nao tiver certeza, use N/A e marque requer_revisao_manual=true. No maximo 4 evidencias. Textos sem HTML. Campos obrigatorios: titulo_sugerido, descricao_sugerida, rac_sugerido, justificativa_rac, confianca, requer_revisao_manual, evidencias. Cada evidencia: id, texto, rac, fonte, confianca, bbox. bbox use x,y,width,height entre 0 e 1 ou null.`;
+  const instructions = `Voce e um especialista de seguranca do trabalho em obras civis. Analise primeiro a descricao base e depois confronte com a foto. Responda somente JSON valido. Liste somente evidencias visiveis, objetivas e relevantes; nao force quantidade e nao invente normas, causas, medidas, equipamentos ou nao conformidades que nao estejam claras. Se existirem varias evidencias reais, liste todas as relevantes, mas descarte itens repetidos, duvidosos ou cosmeticos. Sugira RAC apenas dentro deste catalogo: ${catalog}. Nunca use RAC 14. Quando nao conseguir vincular com seguranca a um RAC, use PNR. Quando nao houver informacao suficiente, use N/A e marque requer_revisao_manual=true. Textos sem HTML. Campos obrigatorios: titulo_sugerido, descricao_sugerida, rac_sugerido, justificativa_rac, confianca, requer_revisao_manual, evidencias. Cada evidencia: id, texto, rac, fonte, confianca, bbox. bbox use x,y,width,height entre 0 e 1 ou null.`;
   const result = await callOpenAI({
-    model: process.env.OPENAI_VISION_MODEL || process.env.OPENAI_MODEL || 'gpt-4o-mini',
+    model: process.env.OPENAI_VISION_MODEL || 'gpt-4o-mini',
     instructions,
     input: [{ role: 'user', content: [
       { type: 'input_text', text: `Descricao base: ${cleanText(payload.descricao, 300)}\nContexto: ${JSON.stringify(payload.contexto || {})}` },
@@ -186,14 +188,14 @@ async function analisar(payload) {
 
 async function gerarDescricao(payload) {
   const racSet = allowedRacs(payload.racs);
-  const rac = racSet.has(normalizeRac(payload.rac)) ? normalizeRac(payload.rac) : 'N/A';
+  const rac = racSet.has(normalizeRac(payload.rac)) ? normalizeRac(payload.rac) : 'PNR';
   const evidencias = Array.isArray(payload.evidencias_selecionadas) ? payload.evidencias_selecionadas : (Array.isArray(payload.evidencias) ? payload.evidencias : []);
   if (!evidencias.length) throw Object.assign(new Error('Selecione ao menos uma evidencia.'), { statusCode: 400 });
   const instructions = 'Voce escreve registros curtos de inspecao de seguranca para RDO. Enriqueça a descricao sem inventar fatos, mantendo linguagem tecnica, objetiva e natural. Responda somente JSON valido com descricao_final. Maximo 300 caracteres, sem HTML.';
   const result = await callOpenAI({
     model: process.env.OPENAI_MODEL || 'gpt-5.4-mini',
     instructions,
-    input: [{ role: 'user', content: [{ type: 'input_text', text: JSON.stringify({ descricao_original: cleanText(payload.descricao_original, 300), rac, evidencias: evidencias.slice(0, 4).map(e => cleanText(typeof e === 'string' ? e : (e.texto || e.descricao), 120)) }) }] }]
+    input: [{ role: 'user', content: [{ type: 'input_text', text: JSON.stringify({ descricao_original: cleanText(payload.descricao_original, 300), rac, evidencias: evidencias.map(e => cleanText(typeof e === 'string' ? e : (e.texto || e.descricao), 120)).filter(Boolean) }) }] }]
   });
   const descricao = cleanText(result.descricao_final || result.descricao || '', 300);
   if (!descricao) throw Object.assign(new Error('Descricao final vazia.'), { statusCode: 502 });
