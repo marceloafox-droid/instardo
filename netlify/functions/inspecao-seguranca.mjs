@@ -206,7 +206,7 @@ async function gerarDescricao(payload) {
   const rac = racSet.has(normalizeRac(payload.rac)) ? normalizeRac(payload.rac) : 'PNR';
   const evidencias = Array.isArray(payload.evidencias_selecionadas) ? payload.evidencias_selecionadas : (Array.isArray(payload.evidencias) ? payload.evidencias : []);
   if (!evidencias.length) throw Object.assign(new Error('Selecione ao menos uma evidencia.'), { statusCode: 400 });
-  const instructions = 'Voce escreve registros curtos de inspecao de seguranca para RDO. Enriqueça a descricao sem inventar fatos, mantendo linguagem tecnica, objetiva e natural. Responda somente JSON valido com descricao_final. Maximo 300 caracteres, sem HTML.';
+  const instructions = 'Voce escreve registros curtos de inspecao de seguranca para RDO. Use somente a descricao original, o RAC/PNR informado e as evidencias selecionadas pelo usuario. Nao invente norma, causa, quantidade ou consequencia. Se algo for incerto, escreva de forma neutra. Responda somente JSON valido com descricao_final. Maximo 300 caracteres incluindo hashtags. Ao final inclua hashtags curtas e relevantes: sempre uma hashtag do RAC aplicado (#RAC01, #RAC10 ou #PNR), use #ocorrencia quando houver risco/ocorrencia, e acrescente 1 a 3 hashtags de seguranca coerentes como #seguranca, #inspecao, #prevencao, sem inventar norma.';
   const result = await callOpenAI({
     model: process.env.OPENAI_MODEL || 'gpt-5.4-mini',
     instructions,

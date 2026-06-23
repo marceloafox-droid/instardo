@@ -1407,7 +1407,7 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
             </button>
           </div>
         </div>
-        <input type="file" id="inp-camera" accept="image/*" capture="environment" style="display:none" onchange="handlePhotoSelect(event)">
+        <input type="file" id="inp-camera" accept="image/*" style="display:none" onchange="handlePhotoSelect(event)">
         <input type="file" id="inp-gallery" accept="image/*" multiple style="display:none" onchange="handlePhotoSelect(event)">
       </div>
       
@@ -1519,7 +1519,7 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
               <div class="photo-drop-tx">Selecionar foto</div>
               <div class="photo-drop-sub">Câmera ou galeria · máx 1 foto</div>
             </div>
-            <input type="file" id="inp-seg-gallery" accept="image/*" capture="environment" style="display:none" onchange="handleSegurancaPhotoSelect(event)">
+            <input type="file" id="inp-seg-gallery" accept="image/*" style="display:none" onchange="handleSegurancaPhotoSelect(event)">
             <!-- Data/hora junto da foto -->
             <div id="seg-exif-alert" class="hidden" style="margin-top:8px"></div>
             <div class="dtrow mt3" id="seg-datetime-row">
@@ -4419,7 +4419,7 @@ function _atualizarFotoCard(registroId) {
     const idx   = feedCarouselState[registroId] || 0;
     const total = fotos.length;
     // Atualizar todos os cards que exibem esse registro (home + pesquisar)
-    document.querySelectorAll(`.feed-post[data-registro-id="${registroId}"] .feed-photo`).forEach(img => {
+    document.querySelectorAll(`.feed-post[data-registro-id="${registroId}"] .feed-photo, .feed-post[data-registro-id="${registroId}"] .feed-photo-inspecao`).forEach(img => {
         img.src = fotos[idx] || '';
         img.onclick = () => openPhotoModal(fotos[idx], fotos, idx);
     });
@@ -9708,6 +9708,12 @@ async function delRegistro(id) {
     if (!reg) return;
     try {
         await sbSoftDelete('relatorios', id);
+        if ((reg.tipoPostagem === 'inspecao_seguranca' || reg.tipo_postagem === 'inspecao_seguranca') && (reg.inspecaoId || reg.inspecao_id)) {
+            await sbRequest(`/rest/v1/rdo_inspecoes_seguranca?id=eq.${encodeURIComponent(reg.inspecaoId || reg.inspecao_id)}`, {
+                method: 'PATCH',
+                body: JSON.stringify({ ativo: false, updated_at: new Date().toISOString() })
+            }).catch(err => console.warn('[INSPECAO_DELETE]', err));
+        }
     } catch (e) {
         toast('Erro ao excluir registro online: ' + getErrMsg(e), 'err', 7000);
         console.error(e);
@@ -14875,6 +14881,24 @@ async function _uploadInspectionAsset(blob, path) {
 
 // ── SALVAR ────────────────────────────────────────────────────
 // PATCH SEGURANÇA - publicação compatível com feed oficial (tabela: relatorios)
+function deterministicUuidFromString(seed) {
+  const s = String(seed || '');
+  let h1 = 0x811c9dc5, h2 = 0x01000193, h3 = 0x9e3779b9, h4 = 0x85ebca6b;
+  for (let i = 0; i < s.length; i++) {
+    const c = s.charCodeAt(i);
+    h1 = Math.imul(h1 ^ c, 16777619);
+    h2 = Math.imul(h2 ^ c, 2246822507);
+    h3 = Math.imul(h3 ^ c, 3266489909);
+    h4 = Math.imul(h4 ^ c, 668265263);
+  }
+  const hex = n => (n >>> 0).toString(16).padStart(8, '0');
+  const raw = (hex(h1) + hex(h2) + hex(h3) + hex(h4)).slice(0, 32).split('');
+  raw[12] = '4';
+  raw[16] = (8 + (parseInt(raw[16], 16) % 4)).toString(16);
+  const id = raw.join('');
+  return id.slice(0,8) + '-' + id.slice(8,12) + '-' + id.slice(12,16) + '-' + id.slice(16,20) + '-' + id.slice(20,32);
+}
+
 async function publicarInspecaoNoFeed(inspecao, cardBlob, cardFinalUrl, cardStoragePath) {
   if (!inspecao || !inspecao.id) throw new Error('Inspecao invalida para publicacao.');
   if (!cardFinalUrl) throw new Error('URL do card final nao disponivel.');
@@ -14882,8 +14906,8 @@ async function publicarInspecaoNoFeed(inspecao, cardBlob, cardFinalUrl, cardStor
   if (!login) throw new Error('Usuario nao identificado para publicacao no feed.');
 
   const inspecaoId = String(inspecao.id);
-  const feedId = 'seg_feed_' + inspecaoId;
-  const fotoId = 'seg_card_' + inspecaoId;
+  const feedId = deterministicUuidFromString('seg_feed_' + inspecaoId);
+  const fotoId = deterministicUuidFromString('seg_card_' + inspecaoId);
   const dataRegistro = inspecao.data_inspecao || new Date().toISOString().slice(0, 10);
   const horaRegistro = inspecao.hora_inspecao || null;
   const titulo = inspecao.titulo || 'Inspecao de seguranca';
