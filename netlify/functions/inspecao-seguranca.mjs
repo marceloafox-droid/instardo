@@ -165,7 +165,9 @@ function validateAnalysis(raw, racSet) {
     const evConf = clamp01(ev.confianca ?? ev.confidence, 0);
     return {
       id: cleanText(ev.id, 40) || `ev-${i + 1}`,
-      texto: cleanText(ev.texto || ev.titulo || ev.descricao, 120),
+      obs_label: cleanText(ev.obs_label, 12) || `Obs-${String(i + 1).padStart(2, '0')}`,
+      texto: cleanText(ev.texto || ev.titulo || ev.descricao, 140),
+      observacao_card: cleanText(ev.observacao_card || ev.obs || ev.texto || ev.titulo || ev.descricao, 34),
       rac: evRac,
       fonte: cleanText(ev.fonte || 'imagem', 40),
       confianca: evConf,
@@ -189,7 +191,7 @@ async function analisar(payload) {
   if (!image) throw Object.assign(new Error('Imagem obrigatoria.'), { statusCode: 400 });
   const dataUrl = image.startsWith('data:') ? image : `data:image/jpeg;base64,${image}`;
   const catalog = [...racSet].join(', ');
-  const instructions = `Voce e um especialista de seguranca do trabalho em obras civis. Analise primeiro a descricao base e depois confronte com a foto. Responda somente JSON valido. Liste somente evidencias visiveis, objetivas e relevantes; nao force quantidade e nao invente normas, causas, medidas, equipamentos ou nao conformidades que nao estejam claras. Se existirem varias evidencias reais, liste todas as relevantes, mas descarte itens repetidos, duvidosos ou cosmeticos. Sugira RAC apenas dentro deste catalogo: ${catalog}. Nunca use RAC 14. Quando nao conseguir vincular com seguranca a um RAC, use PNR. Quando nao houver informacao suficiente, use N/A e marque requer_revisao_manual=true. Textos sem HTML. Campos obrigatorios: titulo_sugerido, descricao_sugerida, rac_sugerido, justificativa_rac, confianca, requer_revisao_manual, evidencias. Cada evidencia: id, texto, rac, fonte, confianca, bbox. bbox use x,y,width,height entre 0 e 1 ou null.`;
+  const instructions = `Voce e um especialista de seguranca do trabalho em obras civis. Analise primeiro a descricao base e depois confronte com a foto. Responda somente JSON valido. Liste somente evidencias visiveis, objetivas e relevantes; nao force quantidade e nao invente normas, causas, medidas, equipamentos ou nao conformidades que nao estejam claras. Se existirem varias evidencias reais, liste todas as relevantes, mas descarte itens repetidos, duvidosos ou cosmeticos. Sugira RAC apenas dentro deste catalogo: ${catalog}. Nunca use RAC 14. Quando nao conseguir vincular com seguranca a um RAC, use PNR. Quando nao houver informacao suficiente, use N/A e marque requer_revisao_manual=true. Textos sem HTML. Campos obrigatorios: titulo_sugerido, descricao_sugerida, rac_sugerido, justificativa_rac, confianca, requer_revisao_manual, evidencias. Cada evidencia: id, obs_label, texto, observacao_card, rac, fonte, confianca, bbox. obs_label deve ser Obs-01, Obs-02 etc. observacao_card deve ter ate 34 caracteres e explicar objetivamente o ponto marcado, como carro estacionado, local proibido, oleo vazado ou mangueira rompida. Use bbox apenas quando o ponto estiver localizavel na foto; bbox use x,y,width,height entre 0 e 1 ou null.`;
   const result = await callOpenAI({
     model: process.env.OPENAI_VISION_MODEL || 'gpt-4o-mini',
     instructions,
@@ -206,15 +208,23 @@ async function gerarDescricao(payload) {
   const rac = racSet.has(normalizeRac(payload.rac)) ? normalizeRac(payload.rac) : 'PNR';
   const evidencias = Array.isArray(payload.evidencias_selecionadas) ? payload.evidencias_selecionadas : (Array.isArray(payload.evidencias) ? payload.evidencias : []);
   if (!evidencias.length) throw Object.assign(new Error('Selecione ao menos uma evidencia.'), { statusCode: 400 });
-  const instructions = 'Voce escreve registros curtos de inspecao de seguranca para RDO. Use somente a descricao original, o RAC/PNR informado e as evidencias selecionadas pelo usuario. Nao invente norma, causa, quantidade ou consequencia. Se algo for incerto, escreva de forma neutra. Responda somente JSON valido com descricao_final. Maximo 300 caracteres incluindo hashtags. Ao final inclua hashtags curtas e relevantes: sempre uma hashtag do RAC aplicado (#RAC01, #RAC10 ou #PNR), use #ocorrencia quando houver risco/ocorrencia, e acrescente 1 a 3 hashtags de seguranca coerentes como #seguranca, #inspecao, #prevencao, sem inventar norma.';
+  const instructions = 'Voce escreve registros de inspecao de seguranca para RDO com linguagem forte, tecnica e educativa, sem inventar fatos. Use somente a descricao original, o RAC/PNR informado e as evidencias selecionadas pelo usuario. Explique o risco observado e a necessidade de controle/prevencao de forma profissional. Nao invente norma, causa, quantidade ou consequencia. Se algo for incerto, escreva de forma neutra. Responda somente JSON valido com descricao_final e hashtags. descricao_final deve ter no maximo 300 caracteres e NAO deve conter hashtags. hashtags deve ser array com hashtags curtas: sempre uma hashtag do RAC aplicado (#RAC01, #RAC10 ou #PNR), use #ocorrencia quando houver risco/ocorrencia, e acrescente 1 a 3 hashtags coerentes como #seguranca, #inspecao, #prevencao, sem inventar norma.';
   const result = await callOpenAI({
     model: process.env.OPENAI_MODEL || 'gpt-5.4-mini',
     instructions,
     input: [{ role: 'user', content: [{ type: 'input_text', text: JSON.stringify({ descricao_original: cleanText(payload.descricao_original, 300), rac, evidencias: evidencias.map(e => cleanText(typeof e === 'string' ? e : (e.texto || e.descricao), 120)).filter(Boolean) }) }] }]
   });
-  const descricao = cleanText(result.descricao_final || result.descricao || '', 300);
+  const descricao = cleanText(result.descricao_final || result.descricao || '', 300).replace(/\s+#\w+/g, '').trim();
   if (!descricao) throw Object.assign(new Error('Descricao final vazia.'), { statusCode: 502 });
-  return { descricao_final: descricao, caracteres: descricao.length };
+  const rawTags = Array.isArray(result.hashtags) ? result.hashtags : String(result.hashtags || '').split(/[\s,;]+/);
+  const hashtags = rawTags
+    .map(tag => String(tag || '').trim())
+    .filter(Boolean)
+    .map(tag => tag.startsWith('#') ? tag : '#' + tag)
+    .map(tag => tag.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^#a-zA-Z0-9_]/g, ''))
+    .filter(tag => tag.length > 1)
+    .slice(0, 5);
+  return { descricao_final: descricao, hashtags, caracteres: descricao.length };
 }
 
 export async function handler(event) {

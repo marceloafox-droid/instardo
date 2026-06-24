@@ -1597,6 +1597,11 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
               <textarea id="seg-desc-final" class="fta" maxlength="300" rows="4"></textarea>
               <div style="text-align:right;font-size:11px;color:var(--txm);margin-top:2px"><span id="seg-desc-final-count">0</span>/300</div>
             </div>
+            <div class="fg">
+              <label class="fl">Hashtags da postagem</label>
+              <input type="text" id="seg-hashtags" class="fi" placeholder="#seguranca #inspecao #PNR" maxlength="160">
+              <div class="txm txs mt1">Aparecem somente na legenda/feed, nao no card.</div>
+            </div>
             <div class="sec-tl" style="margin-top:4px">Tema</div>
             <div class="seg-tema-sel">
               <div class="seg-tema-opt seg-tema-vermelho active" id="tema-opt-vermelho" onclick="selectSegTema('vermelho')">
@@ -14545,6 +14550,8 @@ function _validarRespostaIAInspecao(data) {
       ev.bbox = null;
     }
     ev.texto = texto || ('Evidencia ' + (i + 1));
+    ev.obs_label = ev.obs_label || ('Obs-' + String(i + 1).padStart(2, '0'));
+    ev.observacao_card = _sanitizeInspectionText(ev.observacao_card || ev.obs || ev.texto, 34);
     ev.rac = rac;
     ev.confianca = _clamp01(ev.confianca ?? ev.confidence, 0);
     if (ev.confianca < 0.55) data.requer_revisao_manual = true;
@@ -14566,8 +14573,10 @@ function _aplicarRespostaIA(data) {
   if (racWrap) racWrap.innerHTML = renderRacBadge(data.rac_sugerido) +
     (data.justificativa_rac ? `<p class="tsm txm mt2">${esc(data.justificativa_rac)}</p>` : '');
   if (data.requer_revisao_manual) document.getElementById('seg-rev-manual-warn')?.classList.remove('hidden');
-  const aiAnots = data.evidencias.filter(ev => ev.bbox).map(ev => ({
-    id: ev.id, texto: ev.texto,
+  const aiAnots = data.evidencias.filter(ev => ev.bbox).slice(0, 2).map((ev, idx) => ({
+    id: ev.id,
+    texto: ev.observacao_card || ev.texto,
+    obsLabel: ev.obs_label || ('Obs-' + String(idx + 1).padStart(2, '0')),
     xNorm: ev.bbox.x + ev.bbox.width / 2,
     yNorm: ev.bbox.y + ev.bbox.height / 2,
     bbox: ev.bbox, manual: false, confianca: ev.confianca
@@ -14587,6 +14596,7 @@ function renderEvidenciasInspecao() {
       <input type="checkbox" class="seg-ev-cb" ${ev.selecionada ? 'checked' : ''} onchange="toggleEvidenciaInspecao('${esc(ev.id)}')">
       <div style="flex:1">
         <div class="seg-ev-text" contenteditable="true" oninput="updateEvidenciaText('${esc(ev.id)}', this.textContent)">${esc(ev.texto)}</div>
+        <div class="seg-ev-fonte">${esc(ev.obs_label || 'Obs')} no card: ${esc(ev.observacao_card || ev.texto || '')}</div>
         <div class="seg-ev-fonte">Fonte: ${esc(ev.fonte || 'imagem')} · <span class="seg-ev-conf">${Math.round((ev.confianca || 0) * 100)}%</span></div>
       </div>
       <button onclick="removeEvidencia('${esc(ev.id)}')" style="color:var(--err);font-size:18px;background:none;border:none;cursor:pointer;line-height:1;flex-shrink:0">×</button>
@@ -14633,10 +14643,13 @@ async function gerarDescricaoInspecaoComIA() {
     if (!resp.ok) throw new Error(data.error || data.message || ('HTTP ' + resp.status));
     const desc = _sanitizeInspectionText(data.descricao_final || data.descricao || '', 300);
     if (!desc) throw new Error('A IA nao retornou uma descricao valida.');
+    const hashtags = Array.isArray(data.hashtags) ? data.hashtags.join(' ') : String(data.hashtags || '');
     const tf = document.getElementById('seg-titulo-final');
     const df = document.getElementById('seg-desc-final');
+    const hf = document.getElementById('seg-hashtags');
     if (tf && !tf.value) tf.value = document.getElementById('seg-titulo')?.value || '';
     if (df) { df.value = desc; const cnt = document.getElementById('seg-desc-final-count'); if (cnt) cnt.textContent = desc.length; }
+    if (hf) hf.value = normalizeHashtagsInspecao(hashtags, INSPECAO_STATE.racSelecionado);
     toast('Descricao gerada! Role para baixo para revisar.', 'ok', 3000);
     document.getElementById('seg-titulo-final')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch(e) {
@@ -14781,10 +14794,11 @@ async function generateInspectionCardCanvas() {
     const b = ev.bbox || {};
     const cx = RX + (Number(b.x || 0) + Number(b.width || b.w || 0) / 2) * RW;
     const cy = (Number(b.y || 0) + Number(b.height || b.h || 0) / 2) * H;
-    const text = _truncCtx(ctx, ev.texto || ev.titulo || 'Evidencia', 170);
-    ctx.font = 'bold 16px Arial, sans-serif';
-    const tw = Math.min(185, Math.max(120, ctx.measureText(text).width + 22));
-    const th = 58;
+    const label = ev.obsLabel || ev.obs_label || ('Obs-' + String(idx + 1).padStart(2, '0'));
+    const text = _truncCtx(ctx, ev.texto || ev.titulo || 'Evidencia', 150);
+    ctx.font = 'bold 15px Arial, sans-serif';
+    const tw = Math.min(190, Math.max(132, Math.max(ctx.measureText(text).width, ctx.measureText(label).width) + 24));
+    const th = 66;
     let bx = cx + (idx % 2 === 0 ? 26 : -tw - 26);
     let by = cy - th - 8;
     bx = Math.max(RX + 18, Math.min(W - tw - 28, bx));
@@ -14801,7 +14815,9 @@ async function generateInspectionCardCanvas() {
     ctx.fill();
     ctx.fillStyle = TC;
     ctx.textAlign = 'center';
-    _wrapCtx2(ctx, text, tw - 18, 2).forEach((line, li) => ctx.fillText(line, bx + tw / 2, by + 21 + li * 20));
+    ctx.fillText(label, bx + tw / 2, by + 19);
+    ctx.font = 'bold 14px Arial, sans-serif';
+    _wrapCtx2(ctx, text, tw - 18, 2).forEach((line, li) => ctx.fillText(line, bx + tw / 2, by + 39 + li * 18));
     ctx.textAlign = 'left';
   });
 
@@ -14911,7 +14927,9 @@ async function publicarInspecaoNoFeed(inspecao, cardBlob, cardFinalUrl, cardStor
   const dataRegistro = inspecao.data_inspecao || new Date().toISOString().slice(0, 10);
   const horaRegistro = inspecao.hora_inspecao || null;
   const titulo = inspecao.titulo || 'Inspecao de seguranca';
-  const descricao = inspecao.descricao_final || inspecao.descricao_original || titulo;
+  const descricaoCard = inspecao.descricao_final || inspecao.descricao_original || titulo;
+  const hashtags = normalizeHashtagsInspecao(inspecao.hashtags || '', inspecao.rac_codigo);
+  const descricao = [descricaoCard, hashtags].filter(Boolean).join(' ');
   const path = cardStoragePath || ('seguranca/' + inspecaoId + '/card.jpg');
 
   const regPayload = {
@@ -15030,6 +15048,7 @@ async function salvarInspecaoSeguranca() {
       titulo: document.getElementById('seg-titulo-final')?.value || document.getElementById('seg-titulo')?.value || '',
       descricao_original: document.getElementById('seg-desc-original')?.value || '',
       descricao_final: document.getElementById('seg-desc-final')?.value || '',
+      hashtags: document.getElementById('seg-hashtags')?.value || '',
       data_inspecao: document.getElementById('seg-data')?.value || null,
       hora_inspecao: document.getElementById('seg-hora')?.value || null,
       foto_original_url: fotoOriginalUrl,
@@ -15087,7 +15106,7 @@ function _resetInspecaoForm() {
     usandoIA: false, analisando: false
   });
   ['seg-obra','seg-empresa','seg-frente','seg-rac','seg-data','seg-hora',
-   'seg-titulo','seg-desc-original','seg-titulo-final','seg-desc-final'].forEach(id => {
+   'seg-titulo','seg-desc-original','seg-titulo-final','seg-desc-final','seg-hashtags'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
   document.getElementById('seg-photo-drop')?.style.removeProperty('display');
@@ -15310,7 +15329,6 @@ function getFeedPhotoClass(reg) {
 
 </body>
 </html>
-
 
 
 
