@@ -15169,6 +15169,8 @@ async function salvarInspecaoSeguranca() {
     };
 
     const { hashtags: _hashtagsParaFeed, ...inspecaoDb } = inspecao;
+    inspecaoDb.rac_codigo = /^RAC\s(0[1-9]|1[0-3])$/.test(classificacao) ? classificacao : 'N/A';
+    inspecaoDb.rac_nome_snapshot = racObj?.nome || getSegEventoLabel(classificacao);
     await sbRequest('/rest/v1/rdo_inspecoes_seguranca', {
       method: 'POST', headers: { Prefer: 'return=minimal' },
       body: JSON.stringify(inspecaoDb)
