@@ -1494,13 +1494,6 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
                 <option value="">Selecione a frente...</option>
               </select>
             </div>
-            <div class="fg">
-              <label class="fl fl-req">RAC aplicável</label>
-              <select id="seg-rac" class="fs">
-                <option value="">Carregando catálogo...</option>
-              </select>
-              <div id="seg-rac-badge-wrap" style="margin-top:8px;display:none"></div>
-            </div>
           </div>
 
           <div class="card" style="margin-top:12px">
@@ -1564,10 +1557,33 @@ html,body{width:100%;min-height:100%;overflow-x:hidden!important;background:#000
               <div class="fw6">Analisando com IA...</div>
             </div>
 
+            <div class="div"></div>
+            <div class="sec-tl">Tipo de evento</div>
+            <div class="fg">
+              <label class="fl fl-req">Classificação</label>
+              <select id="seg-evento-tipo" class="fs" onchange="onSegEventoTipoChange()">
+                <option value="">Selecione...</option>
+                <option value="N/A">N/A - Nao identificado</option>
+                <option value="RAC">RAC</option>
+                <option value="5S">5S</option>
+                <option value="INSP_MA">Insp. MA</option>
+                <option value="N3">N3</option>
+                <option value="DSS">DSS</option>
+                <option value="PAR">PAR</option>
+              </select>
+            </div>
+            <div class="fg hidden" id="seg-rac-wrap">
+              <label class="fl fl-req">RAC aplicável</label>
+              <select id="seg-rac" class="fs" onchange="onSegRacChange()">
+                <option value="">Carregando catálogo...</option>
+              </select>
+              <div id="seg-rac-badge-wrap" style="margin-top:8px;display:none"></div>
+            </div>
+
             <div id="seg-ia-resultado" class="hidden">
               <div class="div"></div>
               <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
-                <div class="sec-tl" style="margin:0">RAC sugerido</div>
+                <div class="sec-tl" style="margin:0">Sugestao da IA</div>
                 <div id="seg-rev-manual-warn" class="hidden"><div class="seg-rev-chip" style="font-size:10px">⚠ Revisão manual</div></div>
               </div>
               <div id="seg-rac-sugerido-wrap" style="margin-bottom:12px"></div>
@@ -14122,6 +14138,8 @@ const INSPECAO_STATE = {
   evidencias: [],
   racSugerido: 'N/A',
   racSelecionado: 'N/A',
+  tipoEventoSugerido: 'N/A',
+  tipoEventoSelecionado: '',
   tema: 'vermelho',
   usarLogoVale: false,
   usandoIA: false,
@@ -14174,11 +14192,66 @@ function renderRacOptions(selectId) {
   const sel = document.getElementById(selectId);
   if (!sel) return;
   sel.innerHTML = '<option value="">Selecione o RAC...</option>' +
-    INSPECAO_STATE.racCatalog.map(r => `<option value="${esc(r.codigo)}">${esc(r.codigo)} — ${esc(r.nome)}</option>`).join('');
+    INSPECAO_STATE.racCatalog
+      .filter(r => /^RAC (0[1-9]|1[0-3])$/.test(r.codigo))
+      .map(r => `<option value="${esc(r.codigo)}">${esc(r.codigo)} — ${esc(r.nome)}</option>`).join('');
 }
 
 function getRacByCodigo(codigo) {
   return INSPECAO_STATE.racCatalog.find(r => r.codigo === codigo) || null;
+}
+
+const SEG_EVENTO_OPTIONS = {
+  'N/A': 'N/A',
+  RAC: 'RAC',
+  '5S': '5S',
+  INSP_MA: 'Insp. MA',
+  N3: 'N3',
+  DSS: 'DSS',
+  PAR: 'PAR'
+};
+
+function normalizeSegEventoTipo(value) {
+  const raw = String(value || '').trim().toUpperCase().replace(/\s+/g, ' ');
+  if (!raw) return 'N/A';
+  if (raw === 'RAC') return 'RAC';
+  if (raw === '5S') return '5S';
+  if (raw === 'INSP. MA' || raw === 'INSP MA' || raw === 'INSPECAO MA' || raw === 'INSPEÇÃO MA') return 'INSP_MA';
+  if (raw === 'N3') return 'N3';
+  if (raw === 'DSS') return 'DSS';
+  if (raw === 'PAR') return 'PAR';
+  return 'N/A';
+}
+
+function getSegEventoLabel(value) {
+  return SEG_EVENTO_OPTIONS[normalizeSegEventoTipo(value)] || 'N/A';
+}
+
+function onSegEventoTipoChange() {
+  const rawTipo = document.getElementById('seg-evento-tipo')?.value || '';
+  const tipo = rawTipo ? normalizeSegEventoTipo(rawTipo) : '';
+  INSPECAO_STATE.tipoEventoSelecionado = tipo;
+  const racWrap = document.getElementById('seg-rac-wrap');
+  const racSel = document.getElementById('seg-rac');
+  const badge = document.getElementById('seg-rac-badge-wrap');
+  if (racWrap) racWrap.classList.toggle('hidden', tipo !== 'RAC');
+  if (tipo !== 'RAC') {
+    INSPECAO_STATE.racSelecionado = tipo || '';
+    if (racSel) racSel.value = '';
+    if (badge) { badge.innerHTML = ''; badge.style.display = 'none'; }
+  } else {
+    INSPECAO_STATE.racSelecionado = racSel?.value || '';
+  }
+}
+
+function onSegRacChange() {
+  const rac = document.getElementById('seg-rac')?.value || '';
+  INSPECAO_STATE.racSelecionado = rac;
+  const wrap = document.getElementById('seg-rac-badge-wrap');
+  if (wrap) {
+    wrap.innerHTML = rac ? renderRacBadge(rac) : '';
+    wrap.style.display = rac ? 'block' : 'none';
+  }
 }
 
 function validateSuggestedRac(codigo) {
@@ -14426,16 +14499,11 @@ function validateSegStep1() {
   const obraId    = document.getElementById('seg-obra')?.value;
   const empresaId = document.getElementById('seg-empresa')?.value;
   const frenteId  = document.getElementById('seg-frente')?.value;
-  const rac       = document.getElementById('seg-rac')?.value;
   const data      = document.getElementById('seg-data')?.value;
   if (!obraId)    { toast('Selecione a Obra.', 'err'); return false; }
   if (!empresaId) { toast('Selecione a Empresa.', 'err'); return false; }
   if (!frenteId)  { toast('Selecione a Frente.', 'err'); return false; }
-  if (!rac)       { toast('Selecione o RAC.', 'err'); return false; }
   if (!data)      { toast('Informe a data.', 'err'); return false; }
-  INSPECAO_STATE.racSelecionado = rac;
-  const wrap = document.getElementById('seg-rac-badge-wrap');
-  if (wrap) { wrap.innerHTML = renderRacBadge(rac); wrap.style.display = 'block'; }
   return true;
 }
 
@@ -14529,7 +14597,9 @@ function _clamp01(value, fallback = 0) {
 }
 function _validarRespostaIAInspecao(data) {
   if (!data || typeof data !== 'object') data = {};
-  if (!validateSuggestedRac(data.rac_sugerido)) { data.rac_sugerido = 'PNR'; data.requer_revisao_manual = true; }
+  data.tipo_evento_sugerido = normalizeSegEventoTipo(data.tipo_evento_sugerido || data.tipo_evento || data.classificacao);
+  if (data.tipo_evento_sugerido !== 'RAC') data.rac_sugerido = 'N/A';
+  if (!validateSuggestedRac(data.rac_sugerido)) { data.rac_sugerido = 'N/A'; data.requer_revisao_manual = true; }
   data.titulo_sugerido = _sanitizeInspectionText(data.titulo_sugerido, 120);
   data.descricao_sugerida = _sanitizeInspectionText(data.descricao_sugerida, 300);
   data.justificativa_rac = _sanitizeInspectionText(data.justificativa_rac, 300);
@@ -14538,7 +14608,7 @@ function _validarRespostaIAInspecao(data) {
   if (!Array.isArray(data.evidencias)) data.evidencias = [];
   data.evidencias = data.evidencias.filter(Boolean).map((ev, i) => {
     const texto = _sanitizeInspectionText(ev.texto || ev.titulo || ev.descricao, 120);
-    const rac = validateSuggestedRac(ev.rac || ev.rac_sugerido) ? (ev.rac || ev.rac_sugerido) : 'PNR';
+    const rac = validateSuggestedRac(ev.rac || ev.rac_sugerido) ? (ev.rac || ev.rac_sugerido) : 'N/A';
     const bbox = ev.bbox && typeof ev.bbox === 'object' ? ev.bbox : null;
     if (bbox) {
       const x = _clamp01(bbox.x, 0);
@@ -14564,14 +14634,17 @@ function _validarRespostaIAInspecao(data) {
 
 function _aplicarRespostaIA(data) {
   INSPECAO_STATE.racSugerido = data.rac_sugerido;
+  INSPECAO_STATE.tipoEventoSugerido = data.tipo_evento_sugerido || 'N/A';
   INSPECAO_STATE.evidencias  = data.evidencias;
-  const racSel = document.getElementById('seg-rac');
-  if (racSel && data.rac_sugerido) racSel.value = data.rac_sugerido;
-  INSPECAO_STATE.racSelecionado = data.rac_sugerido;
   if (data.titulo_sugerido) { const t = document.getElementById('seg-titulo'); if (t && !t.value) t.value = data.titulo_sugerido; }
   const racWrap = document.getElementById('seg-rac-sugerido-wrap');
-  if (racWrap) racWrap.innerHTML = renderRacBadge(data.rac_sugerido) +
-    (data.justificativa_rac ? `<p class="tsm txm mt2">${esc(data.justificativa_rac)}</p>` : '');
+  if (racWrap) {
+    const tipoLabel = getSegEventoLabel(data.tipo_evento_sugerido);
+    const racHtml = data.tipo_evento_sugerido === 'RAC' ? renderRacBadge(data.rac_sugerido) : `<span class="seg-rac-badge">${esc(tipoLabel)}</span>`;
+    racWrap.innerHTML = racHtml +
+      (data.justificativa_rac ? `<p class="tsm txm mt2">${esc(data.justificativa_rac)}</p>` : '') +
+      `<p class="tsm txm mt2">Sugestao apenas informativa. Confirme o tipo de evento no campo acima.</p>`;
+  }
   if (data.requer_revisao_manual) document.getElementById('seg-rev-manual-warn')?.classList.remove('hidden');
   const aiAnots = data.evidencias.filter(ev => ev.bbox).slice(0, 2).map((ev, idx) => ({
     id: ev.id,
@@ -14620,9 +14693,34 @@ function adicionarEvidenciaManual() {
   renderEvidenciasInspecao();
 }
 
+function getSegClassificacaoSelecionada() {
+  const rawTipo = document.getElementById('seg-evento-tipo')?.value || '';
+  const tipo = rawTipo ? normalizeSegEventoTipo(rawTipo) : '';
+  if (!tipo) return '';
+  if (tipo === 'RAC') return document.getElementById('seg-rac')?.value || '';
+  return tipo;
+}
+
+function normalizeHashtagsInspecao(raw, classificacao) {
+  const tags = String(raw || '').split(/[\s,;]+/).map(t => t.trim()).filter(Boolean);
+  const cls = String(classificacao || '').trim();
+  if (/^RAC\s*(0[1-9]|1[0-3])$/i.test(cls)) tags.unshift('#' + cls.toUpperCase().replace(/\s+/g, ''));
+  else if (cls && cls !== 'N/A') tags.unshift('#' + getSegEventoLabel(cls).replace(/[^a-zA-Z0-9]/g, ''));
+  if (!tags.some(t => /^#?seguranca$/i.test(t))) tags.push('#seguranca');
+  if (!tags.some(t => /^#?inspecao$/i.test(t))) tags.push('#inspecao');
+  const seen = new Set();
+  return tags.map(tag => tag.startsWith('#') ? tag : '#' + tag)
+    .map(tag => tag.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^#a-zA-Z0-9_]/g, ''))
+    .filter(tag => tag.length > 1)
+    .filter(tag => { const key = tag.toLowerCase(); if (seen.has(key)) return false; seen.add(key); return true; })
+    .slice(0, 6).join(' ');
+}
+
 // ── GERAR DESCRIÇÃO ───────────────────────────────────────────
 async function gerarDescricaoInspecaoComIA() {
   if (!canUseInspectionAI()) { toast('Sem permissao IA.', 'err'); return; }
+  const classificacao = getSegClassificacaoSelecionada();
+  if (!classificacao) { toast('Selecione o tipo de evento na análise.', 'err'); return; }
   const selecionadas = INSPECAO_STATE.evidencias.filter(e => e.selecionada).map(e => e.texto);
   if (!selecionadas.length) { toast('Selecione ao menos uma evidencia.', 'warn'); return; }
   const btn = document.getElementById('btn-gerar-desc');
@@ -14634,7 +14732,8 @@ async function gerarDescricaoInspecaoComIA() {
         action: 'gerar_descricao_inspecao',
         usuario_login: typeof getCurrentUserLogin === 'function' ? getCurrentUserLogin() : '',
         descricao_original: (document.getElementById('seg-desc-original')?.value || '').slice(0, 300),
-        rac: INSPECAO_STATE.racSelecionado,
+        tipo_evento: normalizeSegEventoTipo(document.getElementById('seg-evento-tipo')?.value),
+        rac: classificacao,
         evidencias_selecionadas: selecionadas,
         racs: INSPECAO_STATE.racCatalog.map(r => ({ codigo: r.codigo, nome: r.nome }))
       })
@@ -14649,7 +14748,7 @@ async function gerarDescricaoInspecaoComIA() {
     const hf = document.getElementById('seg-hashtags');
     if (tf && !tf.value) tf.value = document.getElementById('seg-titulo')?.value || '';
     if (df) { df.value = desc; const cnt = document.getElementById('seg-desc-final-count'); if (cnt) cnt.textContent = desc.length; }
-    if (hf) hf.value = normalizeHashtagsInspecao(hashtags, INSPECAO_STATE.racSelecionado);
+    if (hf) hf.value = normalizeHashtagsInspecao(hashtags, classificacao);
     toast('Descricao gerada! Role para baixo para revisar.', 'ok', 3000);
     document.getElementById('seg-titulo-final')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   } catch(e) {
@@ -14720,7 +14819,8 @@ async function generateInspectionCardCanvas() {
   ctx.closePath();
   ctx.fill();
 
-  const racObj = getRacByCodigo(INSPECAO_STATE.racSelecionado) || { codigo: INSPECAO_STATE.racSelecionado || 'PNR', nome: '' };
+  const classificacaoCard = getSegClassificacaoSelecionada() || INSPECAO_STATE.racSelecionado || 'N/A';
+  const racObj = getRacByCodigo(classificacaoCard) || { codigo: getSegEventoLabel(classificacaoCard), nome: '' };
   ctx.fillStyle = YELLOW;
   ctx.beginPath();
   ctx.moveTo(LW - 126, 14);
@@ -14878,6 +14978,10 @@ async function previewInspectionCard() {
 }
 
 function validateSegRevisao() {
+  const classificacao = getSegClassificacaoSelecionada();
+  if (!classificacao) { toast('Selecione o tipo de evento na análise.', 'err'); return false; }
+  INSPECAO_STATE.racSelecionado = classificacao;
+  INSPECAO_STATE.tipoEventoSelecionado = normalizeSegEventoTipo(document.getElementById('seg-evento-tipo')?.value);
   const t = document.getElementById('seg-titulo-final')?.value || document.getElementById('seg-titulo')?.value || '';
   if (!t.trim()) { toast('Informe o título final.', 'err'); return false; }
   return true;
@@ -15009,6 +15113,7 @@ async function publicarInspecaoNoFeed(inspecao, cardBlob, cardFinalUrl, cardStor
 }
 
 async function salvarInspecaoSeguranca() {
+  if (!validateSegRevisao()) return;
   const btn = document.getElementById('btn-salvar-inspecao');
   const statusEl = document.getElementById('seg-salvar-status');
   if (btn) { btn.disabled = true; btn.textContent = 'Salvando...'; }
@@ -15035,7 +15140,10 @@ async function salvarInspecaoSeguranca() {
     const obraEl = document.getElementById('seg-obra');
     const empEl  = document.getElementById('seg-empresa');
     const frEl   = document.getElementById('seg-frente');
-    const racObj = getRacByCodigo(INSPECAO_STATE.racSelecionado);
+    const classificacao = getSegClassificacaoSelecionada() || 'N/A';
+    INSPECAO_STATE.racSelecionado = classificacao;
+    INSPECAO_STATE.tipoEventoSelecionado = normalizeSegEventoTipo(document.getElementById('seg-evento-tipo')?.value);
+    const racObj = getRacByCodigo(classificacao);
     const login  = typeof getCurrentUserLogin === 'function' ? getCurrentUserLogin() : (typeof currentLogin !== 'undefined' ? currentLogin : '');
     const inspecao = {
       id: inspecaoId,
@@ -15043,8 +15151,8 @@ async function salvarInspecaoSeguranca() {
       empresa_id: empEl?.value || null,
       frente_id: frEl?.value || null,
       usuario_login: login,
-      rac_codigo: INSPECAO_STATE.racSelecionado,
-      rac_nome_snapshot: racObj?.nome || '',
+      rac_codigo: classificacao,
+      rac_nome_snapshot: racObj?.nome || getSegEventoLabel(classificacao),
       titulo: document.getElementById('seg-titulo-final')?.value || document.getElementById('seg-titulo')?.value || '',
       descricao_original: document.getElementById('seg-desc-original')?.value || '',
       descricao_final: document.getElementById('seg-desc-final')?.value || '',
@@ -15060,9 +15168,10 @@ async function salvarInspecaoSeguranca() {
       ativo: true
     };
 
+    const { hashtags: _hashtagsParaFeed, ...inspecaoDb } = inspecao;
     await sbRequest('/rest/v1/rdo_inspecoes_seguranca', {
       method: 'POST', headers: { Prefer: 'return=minimal' },
-      body: JSON.stringify(inspecao)
+      body: JSON.stringify(inspecaoDb)
     });
     inspecaoSalva = true;
 
@@ -15103,12 +15212,16 @@ function _resetInspecaoForm() {
   Object.assign(INSPECAO_STATE, {
     currentStep: 1, fotoOriginal: null, fotoPreviewUrl: '',
     anotacoes: [], evidencias: [], racSugerido: 'N/A', racSelecionado: 'N/A',
+    tipoEventoSugerido: 'N/A', tipoEventoSelecionado: '',
     usandoIA: false, analisando: false
   });
   ['seg-obra','seg-empresa','seg-frente','seg-rac','seg-data','seg-hora',
-   'seg-titulo','seg-desc-original','seg-titulo-final','seg-desc-final','seg-hashtags'].forEach(id => {
+   'seg-evento-tipo','seg-titulo','seg-desc-original','seg-titulo-final','seg-desc-final','seg-hashtags'].forEach(id => {
     const el = document.getElementById(id); if (el) el.value = '';
   });
+  document.getElementById('seg-rac-wrap')?.classList.add('hidden');
+  const badge = document.getElementById('seg-rac-badge-wrap');
+  if (badge) { badge.innerHTML = ''; badge.style.display = 'none'; }
   document.getElementById('seg-photo-drop')?.style.removeProperty('display');
   document.getElementById('seg-photo-preview-wrap')?.classList.add('hidden');
   document.getElementById('seg-ia-resultado')?.classList.add('hidden');
@@ -15136,6 +15249,7 @@ async function initRegistroSeguranca() {
   INSPECAO_STATE._initialized = true;
   await loadRacCatalog();
   renderRacOptions('seg-rac');
+  onSegEventoTipoChange();
   loadSegurancaObras();
   await loadValeLogoConfig();
   document.getElementById('seg-desc-original')?.addEventListener('input', function() {
@@ -15329,6 +15443,3 @@ function getFeedPhotoClass(reg) {
 
 </body>
 </html>
-
-
-

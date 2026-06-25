@@ -42,6 +42,22 @@ function normalizeRac(value) {
   return m ? 'RAC ' + String(Number(m[1])).padStart(2, '0') : raw;
 }
 
+function normalizeEventType(value) {
+  const raw = String(value || '').trim().toUpperCase().replace(/\s+/g, ' ');
+  if (!raw) return 'N/A';
+  if (raw === 'RAC') return 'RAC';
+  if (raw === '5S') return '5S';
+  if (raw === 'INSP. MA' || raw === 'INSP MA' || raw === 'INSPECAO MA' || raw === 'INSPEÇÃO MA') return 'INSP_MA';
+  if (raw === 'N3') return 'N3';
+  if (raw === 'DSS') return 'DSS';
+  if (raw === 'PAR') return 'PAR';
+  return 'N/A';
+}
+
+function eventLabel(value) {
+  return { 'N/A': 'N/A', RAC: 'RAC', '5S': '5S', INSP_MA: 'Insp. MA', N3: 'N3', DSS: 'DSS', PAR: 'PAR' }[normalizeEventType(value)] || 'N/A';
+}
+
 function allowedRacs(input) {
   const fromClient = Array.isArray(input)
     ? input.map(r => normalizeRac(typeof r === 'string' ? r : (r.codigo || r.id))).filter(Boolean)
@@ -153,10 +169,11 @@ async function callOpenAI({ model, input, instructions }) {
 }
 
 function validateAnalysis(raw, racSet) {
-  const rac = racSet.has(normalizeRac(raw.rac_sugerido)) ? normalizeRac(raw.rac_sugerido) : 'PNR';
+  const tipoEvento = normalizeEventType(raw.tipo_evento_sugerido || raw.tipo_evento || raw.classificacao);
+  const rac = tipoEvento === 'RAC' && racSet.has(normalizeRac(raw.rac_sugerido)) ? normalizeRac(raw.rac_sugerido) : 'N/A';
   const conf = clamp01(raw.confianca ?? raw.confidence, 0);
   const evidencias = Array.isArray(raw.evidencias) ? raw.evidencias.filter(Boolean).map((ev, i) => {
-    const evRac = racSet.has(normalizeRac(ev.rac || ev.rac_sugerido)) ? normalizeRac(ev.rac || ev.rac_sugerido) : 'PNR';
+    const evRac = racSet.has(normalizeRac(ev.rac || ev.rac_sugerido)) ? normalizeRac(ev.rac || ev.rac_sugerido) : 'N/A';
     const bbox = ev.bbox && typeof ev.bbox === 'object' ? ev.bbox : null;
     const x = bbox ? clamp01(bbox.x, 0) : 0;
     const y = bbox ? clamp01(bbox.y, 0) : 0;
@@ -177,6 +194,7 @@ function validateAnalysis(raw, racSet) {
   return {
     titulo_sugerido: cleanText(raw.titulo_sugerido, 120),
     descricao_sugerida: cleanText(raw.descricao_sugerida, 300),
+    tipo_evento_sugerido: tipoEvento,
     rac_sugerido: rac,
     justificativa_rac: cleanText(raw.justificativa_rac, 300),
     confianca: conf,
@@ -191,7 +209,7 @@ async function analisar(payload) {
   if (!image) throw Object.assign(new Error('Imagem obrigatoria.'), { statusCode: 400 });
   const dataUrl = image.startsWith('data:') ? image : `data:image/jpeg;base64,${image}`;
   const catalog = [...racSet].join(', ');
-  const instructions = `Voce e um especialista de seguranca do trabalho em obras civis. Analise primeiro a descricao base e depois confronte com a foto. Responda somente JSON valido. Liste somente evidencias visiveis, objetivas e relevantes; nao force quantidade e nao invente normas, causas, medidas, equipamentos ou nao conformidades que nao estejam claras. Se existirem varias evidencias reais, liste todas as relevantes, mas descarte itens repetidos, duvidosos ou cosmeticos. Sugira RAC apenas dentro deste catalogo: ${catalog}. Nunca use RAC 14. Quando nao conseguir vincular com seguranca a um RAC, use PNR. Quando nao houver informacao suficiente, use N/A e marque requer_revisao_manual=true. Textos sem HTML. Campos obrigatorios: titulo_sugerido, descricao_sugerida, rac_sugerido, justificativa_rac, confianca, requer_revisao_manual, evidencias. Cada evidencia: id, obs_label, texto, observacao_card, rac, fonte, confianca, bbox. obs_label deve ser Obs-01, Obs-02 etc. observacao_card deve ter ate 34 caracteres e explicar objetivamente o ponto marcado, como carro estacionado, local proibido, oleo vazado ou mangueira rompida. Use bbox apenas quando o ponto estiver localizavel na foto; bbox use x,y,width,height entre 0 e 1 ou null.`;
+  const instructions = `Voce e um especialista de seguranca do trabalho em obras civis. Analise primeiro a descricao base e depois confronte com a foto. Responda somente JSON valido. Liste somente evidencias visiveis, objetivas e relevantes; nao force quantidade e nao invente normas, causas, medidas, equipamentos ou nao conformidades que nao estejam claras. Se existirem varias evidencias reais, liste todas as relevantes, mas descarte itens repetidos, duvidosos ou cosmeticos. Sugira tipo_evento_sugerido escolhendo somente entre: RAC, 5S, INSP_MA, N3, DSS, PAR, N/A. Use RAC somente quando houver relacao clara com o catalogo: ${catalog}. Nunca use RAC 14. Para limpeza, organizacao, higiene, descarte, banheiro, material fora de lugar ou condicao geral de ordem, prefira 5S ou INSP_MA conforme o contexto; se nao tiver certeza, use N/A. Quando tipo_evento_sugerido for RAC, informe rac_sugerido de RAC 01 a RAC 13; caso contrario rac_sugerido deve ser N/A. Quando nao houver informacao suficiente, use N/A e marque requer_revisao_manual=true. Textos sem HTML. Campos obrigatorios: titulo_sugerido, descricao_sugerida, tipo_evento_sugerido, rac_sugerido, justificativa_rac, confianca, requer_revisao_manual, evidencias. Cada evidencia: id, obs_label, texto, observacao_card, rac, fonte, confianca, bbox. obs_label deve ser Obs-01, Obs-02 etc. observacao_card deve ter ate 34 caracteres e explicar objetivamente o ponto marcado, como carro estacionado, local proibido, oleo vazado ou mangueira rompida. Use bbox apenas quando o ponto estiver localizavel na foto; bbox use x,y,width,height entre 0 e 1 ou null.`;
   const result = await callOpenAI({
     model: process.env.OPENAI_VISION_MODEL || 'gpt-4o-mini',
     instructions,
@@ -205,14 +223,16 @@ async function analisar(payload) {
 
 async function gerarDescricao(payload) {
   const racSet = allowedRacs(payload.racs);
-  const rac = racSet.has(normalizeRac(payload.rac)) ? normalizeRac(payload.rac) : 'PNR';
+  const tipoEvento = normalizeEventType(payload.tipo_evento || payload.classificacao);
+  const rawClassificacao = normalizeRac(payload.rac);
+  const rac = tipoEvento === 'RAC' && racSet.has(rawClassificacao) ? rawClassificacao : (tipoEvento === 'RAC' ? 'N/A' : eventLabel(tipoEvento));
   const evidencias = Array.isArray(payload.evidencias_selecionadas) ? payload.evidencias_selecionadas : (Array.isArray(payload.evidencias) ? payload.evidencias : []);
   if (!evidencias.length) throw Object.assign(new Error('Selecione ao menos uma evidencia.'), { statusCode: 400 });
-  const instructions = 'Voce escreve registros de inspecao de seguranca para RDO com linguagem forte, tecnica e educativa, sem inventar fatos. Use somente a descricao original, o RAC/PNR informado e as evidencias selecionadas pelo usuario. Explique o risco observado e a necessidade de controle/prevencao de forma profissional. Nao invente norma, causa, quantidade ou consequencia. Se algo for incerto, escreva de forma neutra. Responda somente JSON valido com descricao_final e hashtags. descricao_final deve ter no maximo 300 caracteres e NAO deve conter hashtags. hashtags deve ser array com hashtags curtas: sempre uma hashtag do RAC aplicado (#RAC01, #RAC10 ou #PNR), use #ocorrencia quando houver risco/ocorrencia, e acrescente 1 a 3 hashtags coerentes como #seguranca, #inspecao, #prevencao, sem inventar norma.';
+  const instructions = 'Voce escreve registros de inspecao de seguranca para RDO com linguagem forte, tecnica e educativa, sem inventar fatos. Use somente a descricao original, a classificacao escolhida pelo usuario e as evidencias selecionadas. Explique o risco observado e a necessidade de controle/prevencao de forma profissional. Nao invente norma, causa, quantidade ou consequencia. Se algo for incerto, escreva de forma neutra. Responda somente JSON valido com descricao_final e hashtags. descricao_final deve ter no maximo 300 caracteres e NAO deve conter hashtags. hashtags deve ser array com hashtags curtas: use a hashtag da classificacao escolhida (#RAC01, #5S, #InspMA, #N3, #DSS, #PAR ou #NA), use #ocorrencia quando houver risco/ocorrencia, e acrescente 1 a 3 hashtags coerentes como #seguranca, #inspecao, #prevencao, sem inventar norma.';
   const result = await callOpenAI({
     model: process.env.OPENAI_MODEL || 'gpt-5.4-mini',
     instructions,
-    input: [{ role: 'user', content: [{ type: 'input_text', text: JSON.stringify({ descricao_original: cleanText(payload.descricao_original, 300), rac, evidencias: evidencias.map(e => cleanText(typeof e === 'string' ? e : (e.texto || e.descricao), 120)).filter(Boolean) }) }] }]
+    input: [{ role: 'user', content: [{ type: 'input_text', text: JSON.stringify({ descricao_original: cleanText(payload.descricao_original, 300), tipo_evento: tipoEvento, classificacao: rac, evidencias: evidencias.map(e => cleanText(typeof e === 'string' ? e : (e.texto || e.descricao), 120)).filter(Boolean) }) }] }]
   });
   const descricao = cleanText(result.descricao_final || result.descricao || '', 300).replace(/\s+#\w+/g, '').trim();
   if (!descricao) throw Object.assign(new Error('Descricao final vazia.'), { statusCode: 502 });
