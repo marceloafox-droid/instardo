@@ -301,7 +301,7 @@ input,textarea,select{font-family:inherit}
 }
 
 /* Feed Instagram */
-.feed-post{background:var(--s1);border-bottom:1px solid var(--bd);margin-bottom:0}
+.feed-post{background:var(--s1);margin-bottom:10px}
 .feed-post-head{display:flex;align-items:center;gap:10px;padding:12px 12px}
 .feed-post-avatar{width:32px;height:32px;border-radius:50%;overflow:hidden;flex-shrink:0}
 .feed-post-info{flex:1}
@@ -673,7 +673,7 @@ input,textarea,select{font-family:inherit}
 #page-home .card{margin-left:12px;margin-right:12px}
 #feed-container{padding:0!important}
 #home-recent{margin-left:0;margin-right:0}
-.insta-card{background:var(--s1);border-bottom:1px solid var(--bd);margin:0;width:100%;overflow:hidden}
+.insta-card{background:var(--s1);margin:0 0 10px;width:100%;overflow:hidden}
 .insta-header{display:flex;align-items:center;gap:10px;padding:12px 14px}
 .insta-avatar{width:34px;height:34px;border-radius:50%;overflow:hidden;flex:0 0 auto;display:flex;align-items:center;justify-content:center;background:var(--s2)}
 .insta-header-text{min-width:0;display:flex;flex-direction:column;gap:2px}
@@ -883,7 +883,7 @@ body,#app,#main-content{background:var(--bg-black)!important;}
 #bottom-nav{background:#000!important;border-top:1px solid var(--bd-black)!important;}
 #page-home,#page-pesquisar{padding:0!important;background:#000!important;}
 #page-home #home-feed-container,#page-pesquisar #global-feed-container{padding:0!important;}
-#page-home .insta-card,#page-pesquisar .insta-card{background:#000!important;border-left:0!important;border-right:0!important;border-radius:0!important;margin:0!important;border-bottom:1px solid var(--bd-black)!important;}
+#page-home .insta-card,#page-pesquisar .insta-card{background:#000!important;border-left:0!important;border-right:0!important;border-radius:0!important;margin:0 0 10px!important;}
 #home-feed-stories,#feed-stories{background:#000!important;border-bottom:1px solid var(--bd-black)!important;}
 .search-global-header{position:sticky;top:0;z-index:12;background:#000;border-bottom:1px solid var(--bd-black);padding:12px 14px;}
 .search-global-header .fi{background:#111!important;border:1px solid #242426!important;border-radius:13px!important;color:#fff!important;}
@@ -2564,7 +2564,7 @@ async function persistirFotoOnlineDireta(photo, relatorioId, ordem) {
         ativo: true,
         ativa: true,
         createdAt: photo.createdAt || new Date().toISOString(),
-        createdBy: photo.createdBy || normalizeLogin(sessionStorage.getItem('rdo_user') || '')
+        createdBy: photo.createdBy || getCurrentUserLogin() || ''
     });
 }
 
@@ -2700,7 +2700,7 @@ function toSbFotoMeta(photo, relatorioId, remoteId, ordem) {
     };
 }
 function fromSbRelatorio(r) { let fotoIds = []; try { fotoIds = Array.isArray(r.foto_ids) ? r.foto_ids.map(S) : (typeof r.foto_ids === 'string' ? JSON.parse(r.foto_ids || '[]').map(S) : []); } catch(_) { fotoIds = []; } return { id: S(r.id), obraId: S(r.obra_id || ''), empresaId: S(r.empresa_id || ''), frenteId: S(r.frente_id || ''), frenteCustom: r.frente_custom || '', clima: r.clima || '', turno: r.turno || '', desc: r.descricao_original || r.descricao || '', descFinal: r.descricao_final || r.descricao_original || r.descricao || '', obs: r.observacao || '', dataRegistro: r.data_registro || r.data || '', horaRegistro: r.hora_registro || r.hora || '', fotoIds, ativa: r.ativo !== false && r.ativa !== false, ativo: r.ativo !== false && r.ativa !== false, createdAt: r.created_at || r.createdAt || '', updatedAt: r.updated_at || r.updatedAt || '', exifUsed: false, tipo_postagem: r.tipo_postagem || '', tipoPostagem: r.tipo_postagem || '', inspecaoId: r.inspecao_id || '', inspecao_id: r.inspecao_id || '', createdBy: r.usuario_login || r.autor_login || '' }; }
-function toSbRelatorio(r) { return { id: S(r.id), obra_id: S(r.obraId || '') || null, empresa_id: S(r.empresaId || '') || null, frente_id: S(r.frenteId || '') || null, frente_custom: r.frenteCustom || null, usuario_login: r.createdBy || normalizeLogin(sessionStorage.getItem('rdo_user') || ''), clima: r.clima || '', turno: r.turno || '', descricao_original: r.desc || r.descricao || '', descricao_final: r.descFinal || r.desc || r.descricao || '', observacao: r.obs || r.observacao || '', data_registro: r.dataRegistro || r.data || null, hora_registro: r.horaRegistro || r.hora || null, foto_ids: Array.isArray(r.fotoIds) ? r.fotoIds : [], foto_count: Array.isArray(r.fotoIds) ? r.fotoIds.length : 0, ativo: r.ativa !== false && r.ativo !== false, tipo_postagem: r.tipoPostagem || r.tipo_postagem || null, inspecao_id: r.inspecaoId || r.inspecao_id || null }; }
+function toSbRelatorio(r) { return { id: S(r.id), obra_id: S(r.obraId || '') || null, empresa_id: S(r.empresaId || '') || null, frente_id: S(r.frenteId || '') || null, frente_custom: r.frenteCustom || null, usuario_login: r.createdBy || getCurrentUserLogin() || '', clima: r.clima || '', turno: r.turno || '', descricao_original: r.desc || r.descricao || '', descricao_final: r.descFinal || r.desc || r.descricao || '', observacao: r.obs || r.observacao || '', data_registro: r.dataRegistro || r.data || null, hora_registro: r.horaRegistro || r.hora || null, foto_ids: Array.isArray(r.fotoIds) ? r.fotoIds : [], foto_count: Array.isArray(r.fotoIds) ? r.fotoIds.length : 0, ativo: r.ativa !== false && r.ativo !== false, tipo_postagem: r.tipoPostagem || r.tipo_postagem || null, inspecao_id: r.inspecaoId || r.inspecao_id || null }; }
 const USER_PERMISSIONS = ['cadastro', 'gerenciar', 'nova', 'historico', 'ia', 'ia_inspecao'];
 function normalizePermissoes(input, login) {
     let raw = [];
@@ -5007,40 +5007,20 @@ function renderPerfilPhotoGrid(registros) {
 }
 function renderPerfilPhotoFeed(registros) {
     const container = document.getElementById('perfil-regs');
-    const likesArr = Array.isArray(socialState.likes) ? socialState.likes : [];
-    const comentariosArr = Array.isArray(socialState.comentarios) ? socialState.comentarios : [];
-    let html = '<div style="padding:14px">';
-    registros.forEach(reg => {
-        const photos = dedupeFotosForRegistro(reg, reg.fotos || []);
-        const thumb = photos[0];
-        if (thumb) {
-            const thumbUrl = getPhotoUrl(thumb);
-            const empresaNome = getEmpresaNome(reg.empresaId) || reg.empresa || '—';
-            const frenteNome = reg.frenteCustom || getFrenteNome(reg.frenteId) || reg.frente || '—';
-            const likes = likesArr.filter(l => S(l.registro_id || l.registroId) === S(reg.id)).length;
-            const comentarios = comentariosArr.filter(c => S(c.registro_id || c.registroId) === S(reg.id) && c.ativo !== false).length;
-            const dataTxt = fmtDate(reg.dataRegistro || reg.data) || (reg.createdAt ? new Date(reg.createdAt).toLocaleDateString('pt-BR') : '—');
-            html += `<div class="reg-card" style="cursor:pointer;margin-bottom:12px" onclick="openPerfilPhotoDetail('${esc(reg.id)}')">
-        <img src="${esc(thumbUrl)}" class="reg-photo" style="object-fit:cover;height:240px;width:100%;display:block">
-        <div class="reg-body">
-          <div style="font-size:14px;color:var(--tx);font-weight:700;margin-bottom:4px">${esc(empresaNome)} <span style="color:var(--yellow)">· ${esc(frenteNome)}</span></div>
-          <div style="font-size:13px;color:var(--txd);margin-bottom:8px">${esc(reg.descFinal || reg.desc || '—')}</div>
-          <div style="font-size:12px;color:var(--txm);display:flex;gap:12px;flex-wrap:wrap;align-items:center">
-            <span>${esc(dataTxt)}</span>
-            <span>❤️ ${likes} curtida${likes !== 1 ? 's' : ''}</span>
-            <span>💬 ${comentarios} comentário${comentarios !== 1 ? 's' : ''}</span>
-          </div>
-        </div>
-      </div>`;
-        }
-    });
-    if (html === '<div style="padding:14px">') {
-        html = '<div style="padding:14px;text-align:center;color:var(--txm);font-size:14px">Nenhuma postagem com fotos</div>';
+    if (!container) return;
+    const comFotos = registros.filter(reg => dedupeFotosForRegistro(reg, reg.fotos || []).length > 0);
+    if (!comFotos.length) {
+        container.innerHTML = '<div style="text-align:center;color:var(--txm);padding:32px 16px;font-size:14px">Nenhuma postagem com fotos</div>';
+        return;
     }
-    else {
-        html += '</div>';
-    }
-    container.innerHTML = html;
+    // Mesmo card usado no feed principal (buildFeedPostCard), para o formato
+    // da imagem/legenda ficar idêntico ao feed em vez do recorte fixo 240px.
+    const likes = socialState.likes;
+    const comentarios = socialState.comentarios;
+    container.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    comFotos.forEach(reg => frag.appendChild(buildFeedPostCard(reg, likes, comentarios)));
+    container.appendChild(frag);
 }
 function openPerfilPhotoDetail(regId) {
     const cached = (window.perfilRegistrosComFotos || []).find(r => S(r.id) === S(regId));
@@ -5539,27 +5519,10 @@ async function toggleFollowPerfil(loginAlvo) {
 function sortFeedPostsChronological(posts) {
     return (Array.isArray(posts) ? posts : []).slice().sort((a, b) => getRegistroTimestamp(b) - getRegistroTimestamp(a));
 }
-function renderFeedPosts(posts, containerId = 'feed-container') {
-    normalizeSocialState();
-    const container = document.getElementById(containerId || 'feed-container');
-    if (!container) return;
-    container.innerHTML = '';
-    if (!posts.length) {
-        container.innerHTML = '<div class="empty mt4"><div class="empty-ic">📭</div><div class="empty-tl">Nenhum registro encontrado</div></div>';
-        return;
-    }
-    const likes = socialState.likes;
-    const comentarios = socialState.comentarios;
-    console.log('[FEED] renderizando', posts.length, 'posts | curtidas:', likes.length, '| comentarios:', comentarios.length);
-    if (likes.length > 0 && posts.length > 0) {
-        const postIds = posts.map(p => String(p.id || '').trim().toLowerCase());
-        const likeIds = likes.map(l => socialRegistroId(l));
-        const bateu = likeIds.filter(id => postIds.includes(id));
-        console.log('[FEED] IDs posts (primeiros 3):', postIds.slice(0,3));
-        console.log('[FEED] IDs curtidas (primeiros 3):', likeIds.slice(0,3));
-        console.log('[FEED] curtidas que batem com posts:', bateu.length, '/', likes.length);
-    }
-    for (const reg of posts) {
+const FEED_PAGE_SIZE = 10;
+const FEED_PREFETCH_FROM_END = 3; // dispara a próxima página quando o item 7º/8º do lote fica visível
+const _feedPagination = {};
+function buildFeedPostCard(reg, likes, comentarios) {
         const owner = getPostOwner(reg) || reg.createdBy || '';
         const perfil = socialState.perfis[owner] || { nome: owner, login: owner };
         const empObj = findById(STATE.empresas, reg.empresaId || reg.empresa_id || reg.empresa);
@@ -5654,7 +5617,86 @@ function renderFeedPosts(posts, containerId = 'feed-container') {
             wrap.dataset.urls = JSON.stringify(feedCarouselFotos[regId]);
             if (feedCarouselFotos[regId].length > 1) _bindFeedSwipe(wrap, regId);
         }
-        container.appendChild(card);
+        return card;
+}
+function renderFeedPosts(posts, containerId = 'feed-container') {
+    normalizeSocialState();
+    const container = document.getElementById(containerId || 'feed-container');
+    if (!container) return;
+    const prevState = _feedPagination[containerId];
+    if (prevState && prevState.observer) { try { prevState.observer.disconnect(); } catch (_) {} }
+    container.innerHTML = '';
+    const all = Array.isArray(posts) ? posts : [];
+    _feedPagination[containerId] = { all, shown: 0, loading: false, done: false, observer: null };
+    if (!all.length) {
+        container.innerHTML = '<div class="empty mt4"><div class="empty-ic">📭</div><div class="empty-tl">Nenhum registro encontrado</div></div>';
+        return;
+    }
+    const likes = socialState.likes;
+    const comentarios = socialState.comentarios;
+    console.log('[FEED] total filtrado:', all.length, 'posts | curtidas:', likes.length, '| comentarios:', comentarios.length, '| exibindo em páginas de', FEED_PAGE_SIZE);
+    renderFeedNextPage(containerId);
+}
+function renderFeedNextPage(containerId) {
+    const state = _feedPagination[containerId];
+    const container = document.getElementById(containerId);
+    if (!state || !container || state.loading || state.done) return;
+    state.loading = true;
+    if (state.observer) { try { state.observer.disconnect(); } catch (_) {} state.observer = null; }
+    const oldStatus = container.querySelector('.feed-page-status');
+    if (oldStatus) oldStatus.remove();
+    const oldSentinel = container.querySelector('.feed-scroll-sentinel');
+    if (oldSentinel) oldSentinel.remove();
+
+    const likes = socialState.likes;
+    const comentarios = socialState.comentarios;
+    const startIndex = state.shown;
+    const slice = state.all.slice(startIndex, startIndex + FEED_PAGE_SIZE);
+    const frag = document.createDocumentFragment();
+    slice.forEach((reg, i) => {
+        const card = buildFeedPostCard(reg, likes, comentarios);
+        card.dataset.feedIndex = String(startIndex + i);
+        frag.appendChild(card);
+    });
+    container.appendChild(frag);
+    state.shown += slice.length;
+    state.done = state.shown >= state.all.length;
+    state.loading = false;
+
+    if (state.done) {
+        const statusEl = document.createElement('div');
+        statusEl.className = 'feed-page-status';
+        statusEl.innerHTML = '<div class="empty mt4" style="padding:18px 0"><div class="txd" style="text-align:center;opacity:.7">Você viu todas as postagens.</div></div>';
+        container.appendChild(statusEl);
+        return;
+    }
+    // Sentinela sem altura/padding visível — existe só para o IntersectionObserver
+    // medir sua posição (display:none não tem bounding box e o observer nunca
+    // dispara). Sem texto/padding aqui para não abrir um vão em branco entre os
+    // posts enquanto o usuário rola (o carregamento é local e instantâneo, não
+    // precisa de indicador visível de "carregando").
+    const sentinel = document.createElement('div');
+    sentinel.className = 'feed-scroll-sentinel';
+    sentinel.style.cssText = 'height:1px;margin:0;padding:0;visibility:hidden';
+    container.appendChild(sentinel);
+
+    if ('IntersectionObserver' in window) {
+        const observer = new IntersectionObserver((entries) => {
+            const hit = entries.some(entry => entry.isIntersecting);
+            if (!hit) return;
+            observer.disconnect();
+            if (state.observer === observer) state.observer = null;
+            renderFeedNextPage(containerId);
+        }, { root: null, rootMargin: '300px', threshold: 0 });
+        // Gatilho 1 (UX): item na posição 7ª/8ª do lote, para pré-carregar antes de chegar ao fim.
+        const triggerOffset = Math.max(0, slice.length - FEED_PREFETCH_FROM_END - 1);
+        const triggerCard = container.querySelector(`[data-feed-index="${startIndex + triggerOffset}"]`);
+        if (triggerCard) observer.observe(triggerCard);
+        // Gatilho 2 (segurança): fim do lote renderizado, garante que uma rolagem
+        // rápida ou instantânea (que pode pular o gatilho 1 sem disparar o
+        // observer) não trave o infinite scroll sem carregar mais itens.
+        observer.observe(sentinel);
+        state.observer = observer;
     }
 }
 async function loadFeed(scope = 'home') {
@@ -9064,6 +9106,17 @@ async function salvarRegistro() {
         if (!confirm('⚠️ Nenhuma foto adicionada.\nDeseja salvar sem foto?')) return;
     }
 
+    // Resolver o login pela mesma cadeia robusta usada em curtidas/comentários
+    // (memória > sessionStorage > localStorage). Ler sessionStorage direto aqui
+    // fazia o post nascer com usuario_login vazio quando o sessionStorage era
+    // limpo (comum em PWA mobile), sumindo do feed mas continuando visível no
+    // histórico para quem tem permissão "gerenciar" (que vê todos os registros).
+    const currentLogin = CoreRules.getCurrentLogin();
+    if (!currentLogin) {
+        toast('Sessão expirada. Faça login novamente antes de publicar.', 'err', 6000);
+        return;
+    }
+
     const relatorioId = uid();
     const photosToUpload = currentProcessedPhotos.slice();
     const fotoIds = [];
@@ -9086,7 +9139,7 @@ async function salvarRegistro() {
         ativa: true,
         createdAt: new Date().toISOString(),
         exifUsed: photosToUpload.length > 0 && !!photosToUpload[0].dataFotoExif,
-        createdBy: normalizeLogin(sessionStorage.getItem('rdo_user') || ''),
+        createdBy: currentLogin,
         registroId: relatorioId,
         relatorioId: relatorioId,
         registro_id: relatorioId,
